@@ -7,7 +7,8 @@ import discord
 from discord import app_commands
 from dotenv import load_dotenv
 
-from cleaner import find_cleanable_links
+from cleaner import extract_urls, find_cleanable_links_async
+from shortlinks import ShortLinkExpander, short_link_target
 
 HERE = Path(__file__).parent
 ENV_FILE = HERE / ".env"
@@ -19,6 +20,7 @@ load_dotenv(ENV_FILE)
 TOKEN = os.environ.get("DISCORD_TOKEN")
 FIX_X = os.environ.get("FIX_X_LINKS", "true").lower() == "true"
 SUPPRESS_ORIGINAL_EMBEDS = os.environ.get("SUPPRESS_ORIGINAL_EMBEDS", "true").lower() == "true"
+EXPAND_SHORT_LINKS = os.environ.get("EXPAND_SHORT_LINKS", "true").lower() == "true"
 
 log = logging.getLogger("linx")
 
@@ -30,9 +32,18 @@ class LinxBot(discord.Client):
     def __init__(self) -> None:
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
+        self.expander = ShortLinkExpander() if EXPAND_SHORT_LINKS else None
 
     async def setup_hook(self) -> None:
         await self.tree.sync()
+
+    async def close(self) -> None:
+        if self.expander:
+            await self.expander.close()
+        await super().close()
+
+    async def clean_links(self, text: str) -> list[str]:
+        return await find_cleanable_links_async(text, fix_x=FIX_X, expand=self.expander)
 
 
 client = LinxBot()
@@ -59,7 +70,7 @@ async def on_message(message: discord.Message) -> None:
     if message.author.bot:
         return
 
-    links = find_cleanable_links(message.content, fix_x=FIX_X)
+    links = await client.clean_links(message.content)
     if not links:
         return
 
@@ -76,7 +87,14 @@ async def on_message(message: discord.Message) -> None:
 @client.tree.command(name="clean", description="Remove tracking from a link (and convert X links to fixvx)")
 @app_commands.describe(link="The link or text containing links to clean")
 async def clean(interaction: discord.Interaction, link: str) -> None:
-    links = find_cleanable_links(link, fix_x=FIX_X)
+    # Expanding short links can outlast Discord's 3-second reply window, so defer for those.
+    if client.expander and any(short_link_target(url) for url in extract_urls(link)):
+        await interaction.response.defer()
+        links = await client.clean_links(link)
+        await interaction.followup.send("\n".join(links) if links else "Couldn't expand or clean that link.")
+        return
+
+    links = await client.clean_links(link)
     if links:
         await interaction.response.send_message("\n".join(links))
     else:
