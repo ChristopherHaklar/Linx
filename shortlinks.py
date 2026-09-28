@@ -10,6 +10,7 @@ log = logging.getLogger("linx.shortlinks")
 
 AMAZON_HOST = r"(?:www\.|smile\.)?amazon\.[a-z.]+"
 TIKTOK_HOST = r"(?:www\.|m\.)?tiktok\.com"
+ANY_HOST = r"[a-z0-9.-]+\.[a-z]{2,}"
 
 # Shortener host -> pattern the final host must match. Only these hosts are ever requested.
 SHORTENERS = {
@@ -20,7 +21,16 @@ SHORTENERS = {
     "vm.tiktok.com": TIKTOK_HOST,
     "vt.tiktok.com": TIKTOK_HOST,
     "spotify.link": r"open\.spotify\.com",
+    "spoti.fi": r"open\.spotify\.com",
     "pin.it": r"(?:[a-z]{2}\.|www\.)?pinterest\.[a-z.]+",
+    "apple.co": r"(?:[a-z0-9-]+\.)*apple\.com",
+    "fb.me": r"(?:[a-z0-9-]+\.)*facebook\.com",
+    # General-purpose shorteners can point anywhere. Dead codes land on the shortener's own
+    # homepage, which is_real_destination rejects because the path is empty.
+    **{host: ANY_HOST for host in (
+        "bit.ly", "j.mp", "t.co", "tinyurl.com", "ow.ly", "buff.ly", "rb.gy", "cutt.ly", "is.gd", "v.gd",
+        "rebrand.ly", "tiny.cc", "shorturl.at", "s.id", "dlvr.it", "trib.al", "bl.ink", "smarturl.it",
+    )},
 }
 # Short links that live on the main site, recognized by path.
 PATH_SHORTENERS = {
