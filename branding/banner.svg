@@ -4,19 +4,19 @@
   <rect width="1500" height="600" fill="url(#bg)"/>
   <g opacity="0.10" transform="translate(-60,-150) scale(1.35)">
   <defs>
-    <clipPath id="ghc1"><circle cx="260" cy="245" r="40"/></clipPath>
-    <clipPath id="ghc2"><circle cx="260" cy="345" r="40"/></clipPath>
+    <clipPath id="ghc1"><circle cx="230" cy="322" r="50"/></clipPath>
+    <clipPath id="ghc2"><circle cx="148.9" cy="403.1" r="50"/></clipPath>
     <mask id="ghm1" maskUnits="userSpaceOnUse" x="0" y="0" width="2000" height="2000">
       <rect width="2000" height="2000" fill="#fff"/>
-      <g clip-path="url(#ghc1)"><rect x="196" y="245" width="204" height="100" rx="50" fill="none" stroke="#000" stroke-width="68"/></g>
+      <g clip-path="url(#ghc1)"><rect x="148" y="322" width="300" height="140" rx="70" fill="none" stroke="#000" stroke-width="60"/></g>
     </mask>
     <mask id="ghm2" maskUnits="userSpaceOnUse" x="0" y="0" width="2000" height="2000">
       <rect width="2000" height="2000" fill="#fff"/>
-      <g clip-path="url(#ghc2)"><rect x="150" y="90" width="110" height="310" rx="55" fill="none" stroke="#000" stroke-width="68"/></g>
+      <g clip-path="url(#ghc2)"><rect x="90" y="50" width="140" height="354" rx="70" fill="none" stroke="#000" stroke-width="60"/></g>
     </mask>
   </defs>
-  <g mask="url(#ghm1)"><rect x="150" y="90" width="110" height="310" rx="55" fill="none" stroke="#3EE0A1" stroke-width="40"/></g>
-  <g mask="url(#ghm2)"><rect x="196" y="245" width="204" height="100" rx="50" fill="none" stroke="#3EE0A1" stroke-width="40"/></g></g>
+  <g mask="url(#ghm1)"><rect x="90" y="50" width="140" height="354" rx="70" fill="none" stroke="#3EE0A1" stroke-width="36"/></g>
+  <g mask="url(#ghm2)"><rect x="148" y="322" width="300" height="140" rx="70" fill="none" stroke="#3EE0A1" stroke-width="36"/></g></g>
   <polygon points="1330.0,112.0 1335.9,144.1 1368.0,150.0 1335.9,155.9 1330.0,188.0 1324.1,155.9 1292.0,150.0 1324.1,144.1" fill="#3EE0A1"/><polygon points="1385.0,191.0 1387.2,202.8 1399.0,205.0 1387.2,207.2 1385.0,219.0 1382.8,207.2 1371.0,205.0 1382.8,202.8" fill="#EAF4F0"/>
   <text x="602" y="300" font-family="Bricolage Grotesque" font-weight="800" font-size="230"
         letter-spacing="-8" fill="#EAF4F0">Linx</text>

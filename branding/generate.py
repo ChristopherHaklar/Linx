@@ -13,19 +13,31 @@ def sparkle(cx, cy, r, fill, waist=0.22):
         pts.append(f"{cx + rr*math.cos(a):.1f},{cy + rr*math.sin(a):.1f}")
     return f'<polygon points="{" ".join(pts)}" fill="{fill}"/>'
 
-def link_L(color, sw=40, gap=14, dx=0, dy=0, uid="a"):
-    """Two interlocked capsules arranged as an L."""
-    stem = dict(x=150+dx, y=90+dy, w=110, h=310, r=55)
-    foot = dict(x=196+dx, y=245+dy, w=204, h=100, r=50)
+def link_L(color, sw=36, gap=12, dx=0, dy=0, uid="a"):
+    """Two interlocked capsules arranged as an L, overlapping at the corner: the stem's rounded bottom
+    and the foot's rounded left end each pass through the other, offset diagonally by `off`.
+    With r=70 and off=58 the curves cross at about 75 degrees and stay 22px apart (after stroke)
+    where they run side by side."""
+    r, off = 70, 58
+    stem = dict(x=60+dx, y=50+dy, w=2*r, h=354, r=r)
+    sc = (stem["x"] + r, stem["y"] + stem["h"] - r)        # centre of the stem's bottom curve
+    fc = (sc[0] + off, sc[1] + off)                        # centre of the foot's left curve
+    foot = dict(x=fc[0] - r, y=fc[1] - r, w=300, h=2*r, r=r)
     def cap(c, extra=0, col=color):
         return (f'<rect x="{c["x"]}" y="{c["y"]}" width="{c["w"]}" height="{c["h"]}" rx="{c["r"]}" '
                 f'fill="none" stroke="{col}" stroke-width="{sw+extra}"/>')
-    p1 = (260+dx, 245+dy)   # foot passes over stem
-    p2 = (260+dx, 345+dy)   # stem passes over foot
+    # Upper-right crossing: the stem's straight right side meets the foot's straight top. Foot goes over.
+    p1 = (stem["x"] + stem["w"], foot["y"])
+    # Lower-left crossing: where the two curves meet (the circle intersection below-left). Stem goes over.
+    mid, k = ((sc[0] + fc[0]) / 2, (sc[1] + fc[1]) / 2), math.sqrt(r*r - off*off / 2) / math.sqrt(2)
+    p2 = (round(mid[0] - k, 1), round(mid[1] + k, 1))
+    # Zones around each crossing where the gap is cut. Big enough that the cut follows the upper link's
+    # outline, small enough not to reach the other crossing (elsewhere the links are kept far enough apart).
+    gr = 50
     return f'''
   <defs>
-    <clipPath id="{uid}c1"><circle cx="{p1[0]}" cy="{p1[1]}" r="40"/></clipPath>
-    <clipPath id="{uid}c2"><circle cx="{p2[0]}" cy="{p2[1]}" r="40"/></clipPath>
+    <clipPath id="{uid}c1"><circle cx="{p1[0]}" cy="{p1[1]}" r="{gr}"/></clipPath>
+    <clipPath id="{uid}c2"><circle cx="{p2[0]}" cy="{p2[1]}" r="{gr}"/></clipPath>
     <mask id="{uid}m1" maskUnits="userSpaceOnUse" x="0" y="0" width="2000" height="2000">
       <rect width="2000" height="2000" fill="#fff"/>
       <g clip-path="url(#{uid}c1)">{cap(foot, 2*gap, "#000")}</g>
@@ -45,7 +57,7 @@ a_logo = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width
   <defs><radialGradient id="g" cx="0.3" cy="0.25" r="0.9">
     <stop offset="0" stop-color="{INK2}"/><stop offset="1" stop-color="{INK}"/></radialGradient></defs>
   <rect width="512" height="512" fill="url(#g)"/>
-  {link_L(MINT, dx=-20, dy=10)}
+  {link_L(MINT, dx=15)}
   {sparkle(372, 150, 46, PAPER)}
   {sparkle(410, 214, 18, MINT)}
 </svg>'''
@@ -81,7 +93,7 @@ def banner(bg1, bg2, word, accent, dim, bad, arrow, ghost, extra=""):
 </svg>'''
 
 a_banner = banner(INK, INK2, PAPER, MINT, "#8FA6B8", CORAL, MINT,
-                  link_L(MINT, uid="gh"),
+                  link_L(MINT, dx=30, uid="gh"),
                   extra=sparkle(1330, 150, 38, MINT) + sparkle(1385, 205, 14, PAPER))
 
 OUT.mkdir(exist_ok=True)
