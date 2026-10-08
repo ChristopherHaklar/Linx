@@ -42,7 +42,7 @@ Linx only replies when the cleaned link is different from the original. Unknown 
 | Amazon | `tag`, `ref`, `ref_`, `psc`, `th`, `linkCode`, `linkId`, `creative`, `creativeASIN`, `camp`, `ascsubtag`, `keywords`, `qid`, `sr`, `crid`, `sprefix`, `dib`, `dib_tag`, `content-id`, `_encoding`, `pd_rd_*`, `pf_rd_*`, `social_share`, `starsleft`, `ie`, `rsd`, `edk`. Product links keep only `smid` (the seller); everything else is dropped. |
 | AliExpress / Temu | `spm`, `scm`, `pvid`, `algo_pvid`, `algo_exp_id`, `aff_*`, `terminal_id`, `sk`, `btsid`, `ws_ab_test`, `pdp_npi`, `curPageLogUid`, `_t`, `_x_ads_channel`, `_x_sessn_id`, `refer_page_name`, `refer_page_id`, `srcSp`, `top_gallery_url` |
 | eBay | `_trkparms`, `_trksid`, `mkcid`, `mkrid`, `mkevt`, `campid`, `customid`, `toolid`, `siteid`, `amdata`, `norover`, `ssspo`, `sssrc`, `ssuid`, `widget_ver` |
-| Etsy | `click_key`, `click_sum`, `frs`, `sc_g`, `organic_search_click`, `ga_order`, `ga_search_type`, `ga_view_type` |
+| Etsy | `click_key`, `click_sum`, `frs`, `sc_g`, `organic_search_click`, `ga_order`, `ga_search_type`, `ga_view_type`, `ga_search_query`, `ref`, `ls`, `sr_prefetch`, `pf_from`, `cns`, `sts`, `content_source`, `logging_key`, `plkey`, `pro`, `sca`. Listing links drop every parameter. |
 | Walmart | `athbdg`, `athcpid`, `athena`, `athpgid`, `athznid`, `from`, `sid`, `veh`, `adsRedirect` |
 | Best Buy | `intl`, `loc`, `acampID` |
 | Shopify | `_v` |
@@ -51,7 +51,7 @@ Linx only replies when the cleaned link is different from the original. Unknown 
 **Other fixes**
 
 - **X / Twitter embeds:** `x.com` and `twitter.com` links (including `www.`, `m.` and `mobile.`) are rewritten to `fixvx.com`. Turn off with `FIX_X_LINKS=false`.
-- **Product links reduced to the product ID:** Amazon `/dp/<ASIN>` (plus `smid` if present), Best Buy `/site/<sku>.p`, Walmart `/ip/<id>`. Other Amazon pages lose their `/ref=...` path segment.
+- **Product links reduced to the product ID:** Amazon `/dp/<ASIN>` (plus `smid` if present), Best Buy `/site/<sku>.p`, Walmart `/ip/<id>`, Etsy `/listing/<id>/<name>`. Other Amazon pages lose their `/ref=...` path segment.
 - **Tracking after the `#`** (e.g. `#utm_source=...`) is removed. Page anchors, app routes (`#/inbox`) and text highlights (`#:~:text=`) are left alone.
 - **Redirect wrappers** are unwrapped to the real destination, including nested and double-encoded ones:
   - Google `google.com/url?q=` and AMP pages (`google.com/amp/s/...`)

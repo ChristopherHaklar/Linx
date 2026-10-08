@@ -3,7 +3,7 @@
 import asyncio
 import re
 from collections.abc import Awaitable, Callable
-from urllib.parse import parse_qsl, unquote, urlencode, urlsplit, urlunsplit
+from urllib.parse import parse_qsl, unquote, unquote_plus, urlsplit, urlunsplit
 
 URL_RE = re.compile(r"https?://[^\s<>\"'`]+", re.IGNORECASE)
 
@@ -89,7 +89,8 @@ SITE_RULES: list[tuple[re.Pattern, set[str]]] = [(host, {p.lower() for p in para
     (_host(rf"ebay\.{TLD}"), {"_trkparms", "_trksid", "mkcid", "mkrid", "mkevt", "campid", "customid", "toolid",
                               "siteid", "amdata", "norover", "ssspo", "sssrc", "ssuid", "widget_ver"}),
     (_host(r"etsy\.com"), {"click_key", "click_sum", "frs", "sc_g", "organic_search_click", "ga_order",
-                           "ga_search_type", "ga_view_type"}),
+                           "ga_search_type", "ga_view_type", "ga_search_query", "ref", "ls", "sr_prefetch",
+                           "pf_from", "cns", "sts", "content_source", "logging_key", "plkey", "pro", "sca"}),
     (_host(r"walmart\.com"), {"athbdg", "athcpid", "athena", "athpgid", "athznid", "from", "sid", "veh",
                               "adsredirect"}),
     (_host(r"bestbuy\.com"), {"intl", "loc", "acampid"}),
@@ -123,13 +124,16 @@ UNWRAPPERS: list[tuple[re.Pattern, re.Pattern | None, tuple[str, ...]]] = [
 ]
 GOOGLE_AMP_PATH = re.compile(r"/amp/(?:s/)?(.+)")
 
-# Product pages reduced to their ID: Amazon /dp/<ASIN>, Best Buy /site/<sku>.p, Walmart /ip/<id>.
+# Product pages reduced to their ID: Amazon /dp/<ASIN>, Best Buy /site/<sku>.p, Walmart /ip/<id>,
+# Etsy /listing/<id>/<name> (with an optional country prefix like /uk).
 AMAZON_PRODUCT_RE = re.compile(r"/(?:dp|gp/product|gp/aw/d)/([A-Z0-9]{10})(?=/|$)", re.IGNORECASE)
 AMAZON_PRODUCT_KEEP = ("smid",)  # the ASIN already pins the item and variant; smid picks the seller
 BESTBUY_HOST = _host(r"bestbuy\.com")
 BESTBUY_PRODUCT_RE = re.compile(r"/site/(?:[^/]+/)?(\d+)\.p")
 WALMART_HOST = _host(r"walmart\.com")
 WALMART_PRODUCT_RE = re.compile(r"/ip/(?:[^/]+/)?(\d+)")
+ETSY_HOST = _host(r"etsy\.com")
+ETSY_LISTING_RE = re.compile(r"(?:/[a-z]{2}(?:-[a-z]{2})?)?/listing/\d+(?:/[^/]+)?", re.IGNORECASE)
 PLAY_STORE_HOST = re.compile(r"play\.google\.com")
 PLAY_STORE_KEEP = ("id", "hl", "gl")
 
@@ -205,6 +209,13 @@ def _clean_fragment(fragment: str, site_params: set[str]) -> str:
     return fragment if len(kept) == len(parts) else "&".join(kept)
 
 
+def _filter_query(query: str, keep: Callable[[str], bool]) -> str:
+    """Drop params whose name fails `keep`, leaving the kept ones exactly as they were written."""
+    segments = [seg for seg in query.split("&") if seg]
+    kept = [seg for seg in segments if keep(unquote_plus(seg.split("=", 1)[0]))]
+    return query if len(kept) == len(segments) else "&".join(kept)
+
+
 def clean_url(url: str, fix_x: bool = True) -> str:
     """Return the URL with tracking params removed and (optionally) X links sent to fixvx."""
     url = _unwrap(url)
@@ -218,14 +229,10 @@ def clean_url(url: str, fix_x: bool = True) -> str:
     query = parts.query
     site_params = _site_params(host)
 
-    if query:
-        pairs = parse_qsl(query, keep_blank_values=True)
-        if PLAY_STORE_HOST.fullmatch(host):
-            kept = [(k, v) for k, v in pairs if k in PLAY_STORE_KEEP]
-        else:
-            kept = [(k, v) for k, v in pairs if not _is_tracking(k, site_params)]
-        if len(kept) != len(pairs):
-            query = urlencode(kept, doseq=True)
+    if PLAY_STORE_HOST.fullmatch(host):
+        query = _filter_query(query, lambda k: k in PLAY_STORE_KEEP)
+    else:
+        query = _filter_query(query, lambda k: not _is_tracking(k, site_params))
 
     fragment = _clean_fragment(parts.fragment, site_params)
 
@@ -233,13 +240,15 @@ def clean_url(url: str, fix_x: bool = True) -> str:
         product = AMAZON_PRODUCT_RE.search(path)
         if product:
             path = f"/dp/{product.group(1)}"
-            query = urlencode([(k, v) for k, v in parse_qsl(parts.query) if k.lower() in AMAZON_PRODUCT_KEEP])
+            query = _filter_query(parts.query, lambda k: k.lower() in AMAZON_PRODUCT_KEEP)
         else:
             path = "/".join(seg for seg in path.split("/") if not seg.lower().startswith("ref="))
     elif BESTBUY_HOST.fullmatch(host) and (product := BESTBUY_PRODUCT_RE.search(path)):
         path, query = f"/site/{product.group(1)}.p", ""  # skuId repeats the path
     elif WALMART_HOST.fullmatch(host) and (product := WALMART_PRODUCT_RE.search(path)):
         path = f"/ip/{product.group(1)}"
+    elif ETSY_HOST.fullmatch(host) and (listing := ETSY_LISTING_RE.match(path)):
+        path, query = listing.group(0), ""  # the listing ID pins the item; every listing param is tracking
 
     if fix_x and X_REWRITE_HOST.fullmatch(host):
         netloc = FIX_X_HOST

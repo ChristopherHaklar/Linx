@@ -191,6 +191,28 @@ class ExpandedRuleTests(unittest.TestCase):
         self.assertCleans("https://www.walmart.com/ip/Some-Toaster-2-Slice/123456789?athbdg=L1600&from=/search",
                           "https://www.walmart.com/ip/123456789")
 
+    def test_etsy_listing_drops_all_params(self):
+        self.assertCleans(
+            "https://www.etsy.com/listing/4563934562/vintage-1990s-seiko-tank-7n00-5b29-black?ls=s"
+            "&ga_order=most_relevant&ga_search_type=all&ga_view_type=gallery&ga_search_query=seiko+5p30+tank+black"
+            "&ref=sr_gallery-1-2&sr_prefetch=1&pf_from=search&cns=1&sts=1"
+            "&content_source=68eefb20%253ALT59a77e&organic_search_click=1&logging_key=68eefb20%3ALT59a77e",
+            "https://www.etsy.com/listing/4563934562/vintage-1990s-seiko-tank-7n00-5b29-black",
+        )
+        self.assertCleans("https://www.etsy.com/uk/listing/123/some-mug?ref=shop_home_active_1&frs=1",
+                          "https://www.etsy.com/uk/listing/123/some-mug")
+        self.assertCleans("https://www.etsy.com/listing/123?click_key=abc", "https://www.etsy.com/listing/123")
+
+    def test_etsy_search_keeps_query(self):
+        self.assertCleans("https://www.etsy.com/search?q=seiko+tank&ref=search_bar&ga_search_query=seiko",
+                          "https://www.etsy.com/search?q=seiko+tank")
+
+    def test_kept_params_are_not_reencoded(self):
+        self.assertCleans("https://example.com/a?x=1:2&list=a,b&q=a%20b&s=a+b&utm_source=z",
+                          "https://example.com/a?x=1:2&list=a,b&q=a%20b&s=a+b")
+        self.assertCleans("https://www.amazon.com/dp/B0B2MLTP7K?smid=A1B:2&tag=x",
+                          "https://www.amazon.com/dp/B0B2MLTP7K?smid=A1B:2")
+
     def test_play_store_keeps_only_id_and_locale(self):
         self.assertCleans(
             "https://play.google.com/store/apps/details?id=com.discord&hl=en&gl=US&referrer=utm_source%3Dx&pcampaignid=y",
