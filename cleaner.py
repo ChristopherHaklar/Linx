@@ -99,7 +99,7 @@ SITE_RULES: list[tuple[re.Pattern, set[str]]] = [(host, {p.lower() for p in para
     (GOOGLE_HOST, {"ei", "ved", "uact", "oq", "gs_lp", "gs_lcrp", "gs_lcp", "gs_l", "gs_ssp", "sclient", "sxsrf",
                    "sca_esv", "sca_upv", "source", "sourceid", "ie", "oe", "rlz", "bih", "biw", "dpr", "iflsig",
                    "aqs", "client", "sa", "usg", "cshid", "fbs", "prmd", "lei", "mstk", "csui", "zx", "no_sw_cr",
-                   "cd", "cad", "rct"}),
+                   "cd", "cad", "rct", "hs", "num"}),
 ]]
 
 # Link wrappers that hide the real destination: (host, path or None, query keys).

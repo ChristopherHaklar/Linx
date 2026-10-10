@@ -100,6 +100,12 @@ class CleanUrlTests(unittest.TestCase):
         )
         self.assertEqual(clean_url("https://www.google.co.uk/search?q=tea&client=firefox-b-d"), "https://www.google.co.uk/search?q=tea")
 
+    def test_google_image_search_viewer_state(self):
+        self.assertEqual(
+            clean_url("https://www.google.com/search?num=10&client=firefox-b-1-d&hs=bS7V&sxsrf=APpeQn:179&udm=2&q=blueface+baby&biw=1278&bih=1270&dpr=1#sv=CAMSUxoyKhBl"),
+            "https://www.google.com/search?udm=2&q=blueface+baby#sv=CAMSUxoyKhBl",  # sv picks the open image
+        )
+
     def test_google_subdomains_untouched(self):
         url = "https://docs.google.com/document/d/abc/edit?source=x"
         self.assertEqual(clean_url(url), url)

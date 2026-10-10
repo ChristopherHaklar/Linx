@@ -38,7 +38,7 @@ Linx only replies when the cleaned link is different from the original. Unknown 
 | LinkedIn | `trk`, `trkInfo`, `trackingId`, `lipi`, `rcm`, `refId`, `eBP`, `otpToken`, `original_referer`, `licu`, `originalSubdomain`, `midToken`, `midSig` |
 | Pinterest | `invite_code`, `sender`, `sfo` |
 | Bing | `cvid`, `form` |
-| Google search | `ei`, `ved`, `oq`, `gs_lp`, `gs_lcrp`, `sca_esv`, `sxsrf`, `sclient`, `client`, `source`, `rlz`, `cd`, `cad`, `rct`, and other search-page noise. `q`, `tbm`, `udm`, `tbs`, `start` and `hl` are kept. |
+| Google search | `ei`, `ved`, `oq`, `gs_lp`, `gs_lcrp`, `sca_esv`, `sxsrf`, `sclient`, `client`, `source`, `rlz`, `cd`, `cad`, `rct`, `hs`, `num`, and other search-page noise. `q`, `tbm`, `udm`, `tbs`, `start` and `hl` are kept. |
 | Amazon | `tag`, `ref`, `ref_`, `psc`, `th`, `linkCode`, `linkId`, `creative`, `creativeASIN`, `camp`, `ascsubtag`, `keywords`, `qid`, `sr`, `crid`, `sprefix`, `dib`, `dib_tag`, `content-id`, `_encoding`, `pd_rd_*`, `pf_rd_*`, `social_share`, `starsleft`, `ie`, `rsd`, `edk`. Product links keep only `smid` (the seller); everything else is dropped. |
 | AliExpress / Temu | `spm`, `scm`, `pvid`, `algo_pvid`, `algo_exp_id`, `aff_*`, `terminal_id`, `sk`, `btsid`, `ws_ab_test`, `pdp_npi`, `curPageLogUid`, `_t`, `_x_ads_channel`, `_x_sessn_id`, `refer_page_name`, `refer_page_id`, `srcSp`, `top_gallery_url` |
 | eBay | `_trkparms`, `_trksid`, `mkcid`, `mkrid`, `mkevt`, `campid`, `customid`, `toolid`, `siteid`, `amdata`, `norover`, `ssspo`, `sssrc`, `ssuid`, `widget_ver` |
