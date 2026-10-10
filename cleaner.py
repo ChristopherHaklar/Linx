@@ -63,7 +63,7 @@ SITE_RULES: list[tuple[re.Pattern, set[str]]] = [(host, {p.lower() for p in para
     (_host(r"youtube\.com|youtu\.be"), {"si", "is", "feature", "pp", "ab_channel", "kw", "source_ve_path",
                                         "embeds_referring_euri", "embeds_referring_origin"}),
     (_host(r"spotify\.com"), {"si", "nd", "context", "_branch_match_id", "_branch_referrer"}),
-    (_host(r"instagram\.com"), {"igsh", "img_index"}),
+    (_host(r"instagram\.com"), {"igsh", "img_index", "srtk"}),
     (_host(r"tiktok\.com"), {"_r", "_d", "_t", "is_from_webapp", "sender_device", "sender_web_id", "web_id",
                              "share_app_id", "share_item_id", "share_link_id", "u_code", "user_id", "timestamp",
                              "social_share_type", "sec_user_id", "checksum", "tt_from", "tt_medium", "source",

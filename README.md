@@ -31,7 +31,7 @@ Linx only replies when the cleaned link is different from the original. Unknown 
 | X / Twitter | `s`, `t`, `cxt`, `rw_tt_thread` |
 | YouTube and youtu.be | `si`, `is`, `feature`, `pp`, `ab_channel`, `kw`, `source_ve_path`, `embeds_referring_euri`, `embeds_referring_origin` |
 | Spotify | `si`, `nd`, `context`, `_branch_match_id`, `_branch_referrer` |
-| Instagram | `igsh`, `img_index` |
+| Instagram | `igsh`, `img_index`, `srtk` |
 | TikTok | `_r`, `_d`, `_t`, `u_code`, `user_id`, `timestamp`, `share_app_id`, `share_item_id`, `share_link_id`, `sender_device`, `sender_web_id`, `web_id`, `is_from_webapp`, `social_share_type`, `sec_user_id`, `checksum`, `tt_from`, `tt_medium`, `source`, `refer` |
 | Reddit | `share_id`, `share_source`, `share_recommendation`, `correlation_id`, `rdt`, `ref_source`, `ref_campaign`, `chainedPosts`, `post_fullname` |
 | Facebook | `mibextid`, `__cft__`, `__tn__`, `__xts__`, `rdid`, `sfnsn`, `extid`, `ref`, `fref`, `hc_ref`, `hc_location`, `paipv`, `eav`, `acontext`, `notif_id`, `notif_t`, `comment_tracking`, `xts` |
