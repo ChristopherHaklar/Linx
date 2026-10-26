@@ -180,6 +180,8 @@ class ExpandedRuleTests(unittest.TestCase):
         self.assertCleans("https://www.instagram.com/p/abc/?ig_rid=1&ig_mid=2", "https://www.instagram.com/p/abc/")
         self.assertCleans("https://www.instagram.com/reel/DeQpcatz_MW/?srtk=MW02MjZ3ZzFiZ2kxcg==",
                           "https://www.instagram.com/reel/DeQpcatz_MW/")
+        self.assertCleans("https://www.instagram.com/reel/De3xhVkT5nR/?cplk=a28wb3o0bjExMm00",
+                          "https://www.instagram.com/reel/De3xhVkT5nR/")
 
     def test_ebay_etsy_temu(self):
         self.assertCleans("https://www.ebay.co.uk/itm/123?_trkparms=a&_trksid=b&mkcid=1&var=5",
