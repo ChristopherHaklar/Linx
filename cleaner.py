@@ -63,7 +63,7 @@ SITE_RULES: list[tuple[re.Pattern, set[str]]] = [(host, {p.lower() for p in para
     (_host(r"youtube\.com|youtu\.be"), {"si", "is", "feature", "pp", "ab_channel", "kw", "source_ve_path",
                                         "embeds_referring_euri", "embeds_referring_origin"}),
     (_host(r"spotify\.com"), {"si", "nd", "context", "_branch_match_id", "_branch_referrer"}),
-    (_host(r"instagram\.com"), {"igsh", "img_index", "srtk", "cplk"}),
+    (_host(r"instagram\.com"), {"igsh", "igsi", "img_index", "srtk", "cplk"}),
     (_host(r"tiktok\.com"), {"_r", "_d", "_t", "is_from_webapp", "sender_device", "sender_web_id", "web_id",
                              "share_app_id", "share_item_id", "share_link_id", "u_code", "user_id", "timestamp",
                              "social_share_type", "sec_user_id", "checksum", "tt_from", "tt_medium", "source",
@@ -74,7 +74,9 @@ SITE_RULES: list[tuple[re.Pattern, set[str]]] = [(host, {p.lower() for p in para
                                "original_referer", "licu", "originalsubdomain", "midtoken", "midsig"}),
     (_host(r"facebook\.com"), {"mibextid", "rdid", "sfnsn", "__tn__", "__cft__", "__xts__", "extid", "ref",
                                "fref", "hc_ref", "hc_location", "paipv", "eav", "acontext", "notif_id", "notif_t",
-                               "comment_tracking", "xts"}),
+                               "comment_tracking", "xts", "idorvanity", "wtsid", "rdc", "rdr", "_rdr", "_nc_x",
+                               "dti", "eid", "ls_ref", "action_history", "referral_code", "referral_story_type",
+                               "video_source", "ftentidentifier"}),
     (_host(rf"pinterest\.{TLD}"), {"invite_code", "sender", "sfo"}),
     (_host(r"bing\.com"), {"cvid", "form"}),
     (AMAZON_HOST, {"ref", "ref_", "tag", "psc", "th", "linkcode", "creative", "camp", "creativeasin", "ascsubtag",
@@ -136,6 +138,11 @@ ETSY_HOST = _host(r"etsy\.com")
 ETSY_LISTING_RE = re.compile(r"(?:/[a-z]{2}(?:-[a-z]{2})?)?/listing/\d+(?:/[^/]+)?", re.IGNORECASE)
 PLAY_STORE_HOST = re.compile(r"play\.google\.com")
 PLAY_STORE_KEEP = ("id", "hl", "gl")
+INSTAGRAM_HOST = _host(r"instagram\.com")
+# Post/reel/TV/story permalinks: the shortcode in the path is the whole identity, so every query
+# param is a share token. Meta rotates the token's name (igshid -> srtk -> cplk -> ...), so rather
+# than chase each new one, drop the entire query on these paths and future tokens die with it.
+INSTAGRAM_CONTENT_RE = re.compile(r"/(?:p|reel|reels|tv)/[^/]+|/stories/[^/]+/[^/]+", re.IGNORECASE)
 
 FIX_X_HOST = "fixvx.com"
 
@@ -249,6 +256,8 @@ def clean_url(url: str, fix_x: bool = True) -> str:
         path = f"/ip/{product.group(1)}"
     elif ETSY_HOST.fullmatch(host) and (listing := ETSY_LISTING_RE.match(path)):
         path, query = listing.group(0), ""  # the listing ID pins the item; every listing param is tracking
+    elif INSTAGRAM_HOST.fullmatch(host) and INSTAGRAM_CONTENT_RE.match(path):
+        query = ""  # the shortcode pins the post; every query param is a (rotating) share token
 
     if fix_x and X_REWRITE_HOST.fullmatch(host):
         netloc = FIX_X_HOST

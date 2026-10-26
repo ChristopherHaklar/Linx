@@ -183,6 +183,22 @@ class ExpandedRuleTests(unittest.TestCase):
         self.assertCleans("https://www.instagram.com/reel/De3xhVkT5nR/?cplk=a28wb3o0bjExMm00",
                           "https://www.instagram.com/reel/De3xhVkT5nR/")
 
+    def test_instagram_content_paths_drop_whole_query(self):
+        # The shortcode is the identity, so unknown/future share tokens are stripped without a named rule.
+        self.assertCleans("https://www.instagram.com/reel/De3xhVkT5nR/?zqxw=future&abcd=1234",
+                          "https://www.instagram.com/reel/De3xhVkT5nR/")
+        self.assertCleans("https://www.instagram.com/p/abc/?igsi=1&stkn=2&xtok=3&img_index=2",
+                          "https://www.instagram.com/p/abc/")
+        self.assertCleans("https://www.instagram.com/stories/someone/123456789/?igshid=xyz",
+                          "https://www.instagram.com/stories/someone/123456789/")
+        # Profile share links aren't content permalinks, so only known trackers are dropped.
+        self.assertCleans("https://www.instagram.com/someuser/?igshid=xyz", "https://www.instagram.com/someuser/")
+
+    def test_facebook_share_params(self):
+        self.assertCleans(
+            "https://www.facebook.com/share/p/abc123/?mibextid=x&wtsid=rdr_y&idorvanity=42&rdc=1&rdr",
+            "https://www.facebook.com/share/p/abc123/")
+
     def test_ebay_etsy_temu(self):
         self.assertCleans("https://www.ebay.co.uk/itm/123?_trkparms=a&_trksid=b&mkcid=1&var=5",
                           "https://www.ebay.co.uk/itm/123?var=5")
