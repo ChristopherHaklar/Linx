@@ -2,29 +2,29 @@
 
 ![Linx](branding/banner.png)
 
-Linx is a Discord bot that watches messages for links, strips tracking parameters (`utm_*`, `fbclid`, `si`, `?s=20&t=...`, etc.), and rewrites `x.com` / `twitter.com` links to `fixvx.com` so they embed properly.
+Linx is a Discord bot that reads messages for links. It removes tracking parameters, such as `utm_*`, `fbclid`, `si` and `?s=20&t=...`. It also changes `x.com` and `twitter.com` links to `fixvx.com`, so Discord shows a full embed for them.
 
-When a message has a link that can be cleaned, the bot replies with the cleaned version and (optionally) hides the original message's embed. There's also a `/clean <link>` slash command and a **Clean links** option when you right-click a message (under **Apps**).
+When a message has a link that Linx can clean, Linx replies with the clean version. Linx can also hide the embed on the original message. To clean a link yourself, use the `/clean <link>` slash command. You can also right-click a message and select **Apps → Clean links**.
 
-## What gets cleaned
+## What Linx removes
 
-Linx only replies when the cleaned link is different from the original. Unknown parameters are always kept, so pagination, search terms and product variants keep working. The full lists live in `cleaner.py`.
+Linx replies only when the clean link is different from the original. Linx always keeps parameters that it does not know, so pagination, search terms and product variants continue to work. The full lists are in `cleaner.py`.
 
-**Removed from every link** (about 150 names, plus anything starting with `utm_`, `pk_`, `mtm_`, `piwik_`, `matomo_`, `hsa_`, `vero_` or `oly_`)
+**Removed from every link** (about 150 names, plus all names that start with `utm_`, `pk_`, `mtm_`, `piwik_`, `matomo_`, `hsa_`, `vero_` or `oly_`)
 
 | Kind | Examples |
 |---|---|
 | Ad click IDs | `fbclid`, `gclid`, `gbraid`, `wbraid`, `gad_source`, `gad_campaignid`, `msclkid`, `ttclid`, `twclid`, `li_fat_id`, `yclid`, `ysclid`, `ScCid`, `epik`, `srsltid` |
-| Analytics | Google `_ga`, `_gl`; Adobe `s_cid`, `s_kwcid`, `ef_id`, `sc_*`; AT Internet `at_*`, `xtor`; comScore `ns_*`; Webtrends `WT.mc_id` |
+| Analytics | Google `_ga`, `_gl`<br>Adobe `s_cid`, `s_kwcid`, `ef_id`, `sc_*`<br>AT Internet `at_*`, `xtor`<br>comScore `ns_*`<br>Webtrends `WT.mc_id` |
 | Social shares | `igshid`, `igsh`, `ig_rid`, `fb_action_ids`, `fb_ref`, `fb_source`, `ref_src`, `ref_url`, `rdt_cid` |
-| Email and marketing | Mailchimp `mc_cid`, `mc_eid`; HubSpot `_hsenc`, `_hsmi`, `__hstc`, `__hssc`, `__hsfp`; Marketo `mkt_tok`; Klaviyo `_kx`; Eloqua `elq*` |
+| Email and marketing | Mailchimp `mc_cid`, `mc_eid`<br>HubSpot `_hsenc`, `_hsmi`, `__hstc`, `__hssc`, `__hsfp`<br>Marketo `mkt_tok`<br>Klaviyo `_kx`<br>Eloqua `elq*` |
 | Affiliate networks | Impact `irclickid`, CJ `cjevent`, ShareASale `sscid`, Awin `awc`, Rakuten `ranMID`, `ranEAID`, `ranSiteID`, PartnerStack `ps_xid` |
-| Article widgets | Outbrain `obOrigUrl`, `ob_click_id`; Taboola `tblci`, `dicbo` |
-| Other | Shopify `_pos`, `_sid`, `_ss`, `_psq`; Yahoo `guccounter`, `guce_referrer`; `cmpid`, `ito`, `referrer` |
+| Article widgets | Outbrain `obOrigUrl`, `ob_click_id`<br>Taboola `tblci`, `dicbo` |
+| Other | Shopify `_pos`, `_sid`, `_ss`, `_psq`<br>Yahoo `guccounter`, `guce_referrer`<br>`cmpid`, `ito`, `referrer` |
 
-`ref` is deliberately **not** removed everywhere, because sites like GitHub use it for real things (`?ref=branch`).
+Linx does **not** remove `ref` from every link, because some sites use it for real data. For example, GitHub uses `?ref=branch`.
 
-**Removed only on specific sites** (these names can mean something real elsewhere; subdomains and country domains are included)
+**Removed only on specific sites.** On other sites, these names can have a real meaning. Each rule also applies to the site's subdomains and country domains.
 
 | Site | Removed |
 |---|---|
@@ -38,87 +38,110 @@ Linx only replies when the cleaned link is different from the original. Unknown 
 | LinkedIn | `trk`, `trkInfo`, `trackingId`, `lipi`, `rcm`, `refId`, `eBP`, `otpToken`, `original_referer`, `licu`, `originalSubdomain`, `midToken`, `midSig` |
 | Pinterest | `invite_code`, `sender`, `sfo` |
 | Bing | `cvid`, `form` |
-| Google search | `ei`, `ved`, `oq`, `gs_lp`, `gs_lcrp`, `sca_esv`, `sxsrf`, `sclient`, `client`, `source`, `rlz`, `cd`, `cad`, `rct`, `hs`, `num`, and other search-page noise. `q`, `tbm`, `udm`, `tbs`, `start` and `hl` are kept. |
-| Amazon | `tag`, `ref`, `ref_`, `psc`, `th`, `linkCode`, `linkId`, `creative`, `creativeASIN`, `camp`, `ascsubtag`, `keywords`, `qid`, `sr`, `crid`, `sprefix`, `dib`, `dib_tag`, `content-id`, `_encoding`, `pd_rd_*`, `pf_rd_*`, `social_share`, `starsleft`, `ie`, `rsd`, `edk`. Product links keep only `smid` (the seller); everything else is dropped. |
+| Google search | `ei`, `ved`, `oq`, `gs_lp`, `gs_lcrp`, `sca_esv`, `sxsrf`, `sclient`, `client`, `source`, `rlz`, `cd`, `cad`, `rct`, `hs`, `num` and other parameters that only the search page uses. Linx keeps `q`, `tbm`, `udm`, `tbs`, `start` and `hl`. |
+| Amazon | `tag`, `ref`, `ref_`, `psc`, `th`, `linkCode`, `linkId`, `creative`, `creativeASIN`, `camp`, `ascsubtag`, `keywords`, `qid`, `sr`, `crid`, `sprefix`, `dib`, `dib_tag`, `content-id`, `_encoding`, `pd_rd_*`, `pf_rd_*`, `social_share`, `starsleft`, `ie`, `rsd`, `edk`. Product links keep only `smid` (the seller). Linx removes all other parameters from them. |
 | AliExpress / Temu | `spm`, `scm`, `pvid`, `algo_pvid`, `algo_exp_id`, `aff_*`, `terminal_id`, `sk`, `btsid`, `ws_ab_test`, `pdp_npi`, `curPageLogUid`, `_t`, `_x_ads_channel`, `_x_sessn_id`, `refer_page_name`, `refer_page_id`, `srcSp`, `top_gallery_url` |
 | eBay | `_trkparms`, `_trksid`, `mkcid`, `mkrid`, `mkevt`, `campid`, `customid`, `toolid`, `siteid`, `amdata`, `norover`, `ssspo`, `sssrc`, `ssuid`, `widget_ver` |
-| Etsy | `click_key`, `click_sum`, `frs`, `sc_g`, `organic_search_click`, `ga_order`, `ga_search_type`, `ga_view_type`, `ga_search_query`, `ref`, `ls`, `sr_prefetch`, `pf_from`, `cns`, `sts`, `content_source`, `logging_key`, `plkey`, `pro`, `sca`. Listing links drop every parameter. |
+| Etsy | `click_key`, `click_sum`, `frs`, `sc_g`, `organic_search_click`, `ga_order`, `ga_search_type`, `ga_view_type`, `ga_search_query`, `ref`, `ls`, `sr_prefetch`, `pf_from`, `cns`, `sts`, `content_source`, `logging_key`, `plkey`, `pro`, `sca`. Linx removes all parameters from listing links. |
 | Walmart | `athbdg`, `athcpid`, `athena`, `athpgid`, `athznid`, `from`, `sid`, `veh`, `adsRedirect` |
 | Best Buy | `intl`, `loc`, `acampID` |
 | Shopify | `_v` |
 | Google Play | everything except `id`, `hl` and `gl` |
 
-**Other fixes**
+**Other changes**
 
-- **X / Twitter embeds:** `x.com` and `twitter.com` links (including `www.`, `m.` and `mobile.`) are rewritten to `fixvx.com`. Turn off with `FIX_X_LINKS=false`.
-- **Product links reduced to the product ID:** Amazon `/dp/<ASIN>` (plus `smid` if present), Best Buy `/site/<sku>.p`, Walmart `/ip/<id>`, Etsy `/listing/<id>/<name>`. Other Amazon pages lose their `/ref=...` path segment.
-- **Discord formatting is respected:** a spoilered link (`||link||`) gets a spoilered reply, a link posted without an embed (`<link>`) gets a reply without one, and links inside `code` or code blocks are ignored.
-- **Tracking after the `#`** (e.g. `#utm_source=...`) is removed. Page anchors, app routes (`#/inbox`) and text highlights (`#:~:text=`) are left alone.
-- **Redirect wrappers** are unwrapped to the real destination, including nested and double-encoded ones:
+- **X / Twitter embeds:** Linx changes `x.com` and `twitter.com` links to `fixvx.com`. This includes `www.`, `m.` and `mobile.` links. To disable this, set `FIX_X_LINKS=false`.
+- **Product links:** Linx reduces these links to the product ID: Amazon `/dp/<ASIN>` (plus `smid` if present), Best Buy `/site/<sku>.p`, Walmart `/ip/<id>`, Etsy `/listing/<id>/<name>`. On other Amazon pages, Linx removes the `/ref=...` path segment.
+- **Discord formatting:**
+  - A spoilered link (`||link||`) gets a spoilered reply.
+  - A link without an embed (`<link>`) gets a reply without an embed.
+  - Linx ignores links in `code` and in code blocks.
+- **Tracking after the `#`:** Linx removes tracking such as `#utm_source=...`. Linx does not change page anchors, app routes (`#/inbox`) or text highlights (`#:~:text=`).
+- **Redirect wrappers:** Linx replaces each wrapper with the real destination. This also works for nested and double-encoded wrappers:
   - Google `google.com/url?q=` and AMP pages (`google.com/amp/s/...`)
   - YouTube `/redirect` (links in video descriptions)
   - Facebook `l.facebook.com`, `lm.facebook.com`, `l.messenger.com`, `l.instagram.com`
   - Outlook Safe Links, Steam's link filter, `out.reddit.com`, Tumblr `t.umblr.com`, Medium `/r/`, LinkedIn `/redir/redirect`, XING, Slack, VK, Pocket, DeviantArt and `href.li`
-- **Short links** are expanded and then cleaned. Linx reads only the redirect from the shortener and never loads the destination page. If a short code is dead and lands on a homepage, the link is left alone. Turn off with `EXPAND_SHORT_LINKS=false`.
+- **Short links:** Linx expands short links, then cleans them. Linx reads only the redirect from the shortener. It never loads the destination page. If a short code is dead and goes to a homepage, Linx does not change the link. To disable this, set `EXPAND_SHORT_LINKS=false`.
   - Site shorteners: `amzn.to`, `a.co`, `amzn.eu`, `amzn.asia`, `vm.tiktok.com`, `vt.tiktok.com`, `tiktok.com/t/...`, Reddit `/r/<sub>/s/...`, `spotify.link`, `spoti.fi`, `pin.it`, `apple.co`, `fb.me`
-  - General shorteners: `bit.ly`, `j.mp`, `t.co`, `tinyurl.com`, `ow.ly`, `buff.ly`, `rb.gy`, `cutt.ly`, `is.gd`, `v.gd`, `rebrand.ly`, `tiny.cc`, `shorturl.at`, `s.id`, `dlvr.it`, `trib.al`, `bl.ink`, `smarturl.it`. These always get a reply showing where they really go.
+  - General shorteners: `bit.ly`, `j.mp`, `t.co`, `tinyurl.com`, `ow.ly`, `buff.ly`, `rb.gy`, `cutt.ly`, `is.gd`, `v.gd`, `rebrand.ly`, `tiny.cc`, `shorturl.at`, `s.id`, `dlvr.it`, `trib.al`, `bl.ink`, `smarturl.it`. For these, Linx always replies to show the real destination.
 
 ## Setup
 
 1. Create an application named **Linx** at https://discord.com/developers/applications.
-2. On its **Bot** page, click **Reset Token** and copy the token, then enable **Message Content Intent** and save.
-3. Double-click **`start.bat`**. On first run it installs everything and asks you to paste the token (saved to `.env`).
-4. Open the invite link Linx prints in the window to add it to your server.
-5. Optional, so people can use Linx in servers it isn't in and in DMs: on the app's **Installation** page, tick **User Install** and give it the `applications.commands` scope. Linx prints a second link for adding it to your own account.
+2. On its **Bot** page, click **Reset Token** and copy the token. Then enable **Message Content Intent** and save.
+3. Double-click **`start.bat`**. On the first run, it installs all dependencies and asks for the token. It saves the token to `.env`.
+4. To add Linx to your server, open the invite link that Linx prints in the window.
+5. Optional: let people use Linx in DMs and in servers that do not have Linx. On the app's **Installation** page, select **User Install** and add the `applications.commands` scope. Then open the second link that Linx prints. This link adds Linx to your own account.
 
-Keep the window open while you want the bot online. If the token is wrong, Linx clears it and asks again next run.
+Linx is online only while the window is open. If the token is wrong, Linx removes it from `.env` and asks for a new token on the next run.
 
 ## Server settings
 
-People with **Manage Server** control Linx in their server. Settings are private replies, so no one else sees them.
+People with the **Manage Server** permission control Linx in their server. Linx shows the settings in private replies, so other people do not see them.
 
-- `/server settings` shows the current settings. Give any option to change it:
-  - `auto_clean`: reply to links people post. With it off, Linx only answers `/clean` and **Clean links**.
-  - `fix_x_links`: rewrite X links to fixvx.
-  - `expand_short_links`: follow short links like `bit.ly`.
-  - `hide_original_embeds`: hide the embed on the original message after replying.
-  - `delete_reaction`: the ❌ described below.
-- `/server ignore-channel` stops automatic cleaning in a channel, or a whole category. Threads follow their channel. `/clean` still works there. `/server watch-channel` undoes it.
+- `/server settings` shows the current settings. To change a setting, give its option:
+  - `auto_clean`: reply to links that people post. When this is off, Linx answers only `/clean` and **Clean links**.
+  - `fix_x_links`: change X links to fixvx.
+  - `expand_short_links`: expand short links such as `bit.ly`.
+  - `hide_original_embeds`: hide the embed on the original message after Linx replies.
+  - `delete_reaction`: the ❌ reaction. See [Deleting Linx's reply](#deleting-linxs-reply).
+- `/server ignore-channel` stops automatic cleaning in a channel or in a full category. Threads use the setting of their channel. `/clean` still works in an ignored channel.
+- `/server watch-channel` starts automatic cleaning again in an ignored channel.
 
-`FIX_X_LINKS`, `EXPAND_SHORT_LINKS` and `SUPPRESS_ORIGINAL_EMBEDS` set the defaults for servers that haven't changed that setting. `EXPAND_SHORT_LINKS=false` turns expansion off everywhere.
+`FIX_X_LINKS`, `EXPAND_SHORT_LINKS` and `SUPPRESS_ORIGINAL_EMBEDS` set the default for each server that did not change that setting. `EXPAND_SHORT_LINKS=false` disables expansion in all servers.
 
 ## Deleting Linx's reply
 
-Linx adds a ❌ to each link it posts in a server. When the person it posted for clicks it, or anyone with Manage Messages in that channel, Linx deletes its post and brings back the original message's embed. Linx needs the **Add Reactions** permission for this. Servers that added Linx before this feature need to grant it, or re-invite Linx with the new link.
+Linx adds a ❌ reaction to each link that it posts in a server. These people can click it:
 
-## Using Linx where it isn't installed
+- the person that Linx posted the link for
+- people with the **Manage Messages** permission in that channel
 
-With Linx added to your account (Setup step 5), `/clean` and **Clean links** work in any server and in DMs. Linx isn't a member of those servers, so it can't clean links automatically, hide embeds, add the ❌ or send reply notifications there. Servers that block outside apps from posting publicly get a private reply instead, which only you see.
+When one of them clicks ❌, Linx deletes its post. Linx also restores the embed on the original message.
+
+Linx needs the **Add Reactions** permission for this. Servers that added Linx before this release must give Linx this permission. Or they can invite Linx again with the new invite link.
+
+## Using Linx where it is not installed
+
+When Linx is on your account (Setup step 5), `/clean` and **Clean links** work in all servers and in DMs. Linx is not a member of those servers, so Linx cannot do these things there:
+
+- clean links automatically
+- hide embeds
+- add the ❌ reaction
+- send notifications
+
+Some servers do not let outside apps post public messages. In those servers, Linx sends a private reply that only you can see.
 
 ## Reply and reaction notifications
 
-When Linx posts a cleaned link for someone, replies and reactions to it go to Linx instead of that person, so Linx forwards them by DM. This covers links someone ran `/clean` on and Linx's automatic replies to links people posted (notifications go to the person who posted the link):
+When Linx posts a clean link for a person, replies and reactions to the post go to Linx, not to that person. So Linx sends them to that person by DM:
 
-- **Replies** are sent right away, with the reply text and a link to it.
-- **Reactions** are bundled. After the first reaction, Linx waits 30 seconds and sends every reaction from that window in one DM. A reaction after that starts a new bundle.
+- For `/clean` and **Clean links**, notifications go to the person who used the command.
+- For automatic replies, notifications go to the person who posted the original link.
 
-Each person controls their own notifications with `/notifications`. It shows current settings when run with no options.
+Linx sends the two types of notification differently:
 
-- `/notifications replies:False` or `reactions:False` turns either one off. Set both to `False` to turn notifications off completely.
-- `/notifications bundle_seconds:120` changes the reaction window (0 to 3600 seconds; 0 sends each reaction right away).
+- **Replies:** Linx sends each reply immediately, with the reply text and a link to it.
+- **Reactions:** Linx collects reactions into a bundle. After the first reaction, Linx waits 30 seconds. Then it sends all reactions from that period in one DM. A reaction after that starts a new bundle.
 
-Settings are stored in `data/linx.db` (or `$LINX_DATA_DIR/linx.db`). People who block DMs from server members won't get notifications.
+Each person controls their own notifications with `/notifications`. Without options, it shows the current settings.
+
+- `/notifications replies:False` disables reply notifications. `/notifications reactions:False` disables reaction notifications. To disable all notifications, set both to `False`.
+- `/notifications bundle_seconds:120` changes the bundle period. The range is 0 to 3600 seconds. With 0, Linx sends each reaction immediately.
+
+Linx stores the settings in `data/linx.db` (or `$LINX_DATA_DIR/linx.db`). People who block DMs from server members do not get notifications.
 
 ## Running with Docker
 
-For an always-on server, build the image and pass settings through an env file (see `.env.example`):
+To run Linx on a server all the time, build the image. Then give it the settings in an env file (see `.env.example`):
 
 ```sh
 docker build -t linx .
 docker run -d --name linx --restart unless-stopped --env-file .env -v linx-data:/data linx
 ```
 
-`docker logs linx` shows the invite link. The token must be set in `.env`, since the container can't prompt for it.
+`docker logs linx` shows the invite link. You must put the token in `.env`, because the container cannot ask for it.
 
 ## Tests
 
@@ -126,7 +149,7 @@ docker run -d --name linx --restart unless-stopped --env-file .env -v linx-data:
 .venv\Scripts\python -m unittest
 ```
 
-With Docker (runs as your user so the tests can read `.env`):
+To run the tests with Docker, use this command. It runs as your user, so the tests can read `.env`:
 
 ```sh
 docker run --rm --user "$(id -u):$(id -g)" -v "$PWD":/src -w /src linx python -m unittest
@@ -134,8 +157,14 @@ docker run --rm --user "$(id -u):$(id -g)" -v "$PWD":/src -w /src linx python -m
 
 ## Customizing
 
-Tracking parameter lists live at the top of `cleaner.py`: `GLOBAL_TRACKING_PARAMS` and `GLOBAL_TRACKING_PREFIXES` apply everywhere, `SITE_RULES` only on specific sites (e.g. `si` is tracking on YouTube/Spotify but may be meaningful elsewhere), and `UNWRAPPERS` lists the redirect wrappers. Supported short-link services are listed in `shortlinks.py`. Only those hosts are ever contacted.
+The lists of tracking parameters are at the top of `cleaner.py`:
+
+- `GLOBAL_TRACKING_PARAMS` and `GLOBAL_TRACKING_PREFIXES` apply to all links.
+- `SITE_RULES` apply only to specific sites. For example, `si` is tracking on YouTube and Spotify, but it may have a real meaning on other sites.
+- `UNWRAPPERS` lists the redirect wrappers.
+
+`shortlinks.py` lists the supported short-link services. Linx contacts only those hosts.
 
 ## Branding
 
-`branding/` holds the avatar (`logo.png`, 1024×1024) and profile banner (`banner.png`, 1500×600), with SVG sources and `generate.py` to regenerate them.
+`branding/` contains the avatar (`logo.png`, 1024×1024) and the profile banner (`banner.png`, 1500×600). It also contains the SVG sources and `generate.py`, which makes the images again from the SVG sources.
