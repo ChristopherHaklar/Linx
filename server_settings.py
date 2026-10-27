@@ -48,6 +48,11 @@ class ServerSettingsStore:
         self._db = sqlite3.connect(path)
         columns = ", ".join(f"{name} INTEGER" for name in TOGGLES)
         self._db.execute(f"CREATE TABLE IF NOT EXISTS server_settings (guild_id INTEGER PRIMARY KEY, {columns})")
+        # Tables made by an older version are missing newer toggles; add them (NULL means "use the default").
+        existing = {row[1] for row in self._db.execute("PRAGMA table_info(server_settings)")}
+        for name in TOGGLES:
+            if name not in existing:
+                self._db.execute(f"ALTER TABLE server_settings ADD COLUMN {name} INTEGER")
         self._db.execute(
             "CREATE TABLE IF NOT EXISTS ignored_channels ("
             " guild_id INTEGER NOT NULL, channel_id INTEGER NOT NULL, PRIMARY KEY (guild_id, channel_id))"

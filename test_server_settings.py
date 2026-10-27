@@ -1,3 +1,4 @@
+import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
@@ -55,6 +56,18 @@ class ServerSettingsStoreTests(unittest.TestCase):
         self.store.close()
         self.store = ServerSettingsStore(self.path)
         self.assertEqual(self.store.get(1), ServerSettings(hide_original_embeds=False, ignored_channels=frozenset({10})))
+
+    def test_adds_toggles_missing_from_older_table(self):
+        self.store.close()
+        db = sqlite3.connect(self.path)
+        db.execute("DROP TABLE server_settings")
+        db.execute("CREATE TABLE server_settings (guild_id INTEGER PRIMARY KEY, auto_clean INTEGER)")
+        db.execute("INSERT INTO server_settings VALUES (1, 0)")
+        db.commit()
+        db.close()
+        self.store = ServerSettingsStore(self.path)
+        self.assertEqual(self.store.get(1), ServerSettings(auto_clean=False))
+        self.assertEqual(self.store.update(1, fix_instagram_links=False), ServerSettings(auto_clean=False, fix_instagram_links=False))
 
 
 class IgnoresTests(unittest.TestCase):
