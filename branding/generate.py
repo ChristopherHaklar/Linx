@@ -1,9 +1,39 @@
 """Generate Linx logo.svg and banner.svg. Render to PNG with:
   rsvg-convert -w 1024 -h 1024 logo.svg -o logo.png
   rsvg-convert -w 1500 -h 600 banner.svg -o banner.png
-(needs Bricolage Grotesque and JetBrains Mono installed)"""
-import math, pathlib
+Banner text is converted to paths so the SVG looks right without the fonts. Generating it needs
+Bricolage Grotesque and JetBrains Mono installed (found with fc-match; variable or static files)
+and fontTools."""
+import functools, math, pathlib, subprocess
+from fontTools.pens.svgPathPen import SVGPathPen
+from fontTools.pens.transformPen import TransformPen
+from fontTools.ttLib import TTFont
+from fontTools.varLib import instancer
 OUT = pathlib.Path(__file__).parent
+
+@functools.cache
+def load_font(family, **axes):
+    """The installed font for `family`, pinned to `axes` if it's a variable font."""
+    path = subprocess.run(["fc-match", "-f", "%{file}", family], capture_output=True, text=True, check=True).stdout
+    font = TTFont(path)
+    if family.split(":")[0].lower() not in font["name"].getBestFamilyName().lower():
+        raise SystemExit(f"{family} is not installed (fc-match gave {path})")
+    if "fvar" in font:
+        font = instancer.instantiateVariableFont(font, {a.axisTag: axes.get(a.axisTag, a.defaultValue)
+                                                         for a in font["fvar"].axes})
+    return font
+
+def text_path(text, font, size, x, y, fill, spacing=0):
+    """`text` as one <path> with its baseline at y. Returns the path and the x where the text ends.
+    No kerning, which matches the monospace lines and is invisible in the wordmark."""
+    glyphs, cmap, hmtx = font.getGlyphSet(), font.getBestCmap(), font["hmtx"]
+    k = size / font["head"].unitsPerEm
+    pen = SVGPathPen(glyphs, ntos=lambda v: f"{v:.1f}".rstrip("0").rstrip("."))
+    for ch in text:
+        name = cmap[ord(ch)]
+        glyphs[name].draw(TransformPen(pen, (k, 0, 0, -k, x, y)))
+        x += hmtx[name][0] * k + spacing
+    return f'<path fill="{fill}" d="{pen.getCommands()}"/>', x
 
 def sparkle(cx, cy, r, fill, waist=0.22):
     pts = []
@@ -62,10 +92,12 @@ a_logo = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width
   {sparkle(410, 214, 18, MINT)}
 </svg>'''
 
-def mono(x, y, size, parts, anchor="start"):
-    spans = "".join(f'<tspan fill="{c}"{" text-decoration=\"line-through\"" if s else ""}>{t.replace("&", "&amp;")}</tspan>' for t, c, s in parts)
-    return (f'<text x="{x}" y="{y}" font-family="JetBrains Mono" font-weight="500" font-size="{size}" '
-            f'text-anchor="{anchor}" xml:space="preserve">{spans}</text>')
+def mono(x, y, size, parts):
+    font, out = load_font("JetBrains Mono", wght=500), []
+    for text, color in parts:
+        path, x = text_path(text, font, size, x, y, color)
+        out.append(path)
+    return "".join(out)
 
 def strike(x1, x2, y, color, w=4):
     return f'<line x1="{x1}" y1="{y}" x2="{x2}" y2="{y}" stroke="{color}" stroke-width="{w}" stroke-linecap="round"/>'
@@ -84,11 +116,10 @@ def banner(bg1, bg2, word, accent, dim, bad, arrow, ghost, extra=""):
   <rect width="1500" height="600" fill="url(#bg)"/>
   <g opacity="0.10" transform="translate(-60,-150) scale(1.35)">{ghost}</g>
   {extra}
-  <text x="{x0-8}" y="300" font-family="Bricolage Grotesque" font-weight="800" font-size="230"
-        letter-spacing="-8" fill="{word}">Linx</text>
-  {mono(x0, y1, fs, [(l1a, dim, 0), (l1b, bad, 0)])}
+  {text_path("Linx", load_font("Bricolage Grotesque", opsz=12, wdth=100, wght=800), 230, x0-8, 300, word, -8)[0]}
+  {mono(x0, y1, fs, [(l1a, dim), (l1b, bad)])}
   {strike(x0 + len(l1a)*cw, x0 + (len(l1a)+len(l1b))*cw, y1-11, bad)}
-  {mono(x0, y2, fs, [(l2a, bad, 0), (l2b, accent, 0), (l2c, dim, 0)])}
+  {mono(x0, y2, fs, [(l2a, bad), (l2b, accent), (l2c, dim)])}
   {strike(x0, x0 + len(l2a)*cw, y2-11, bad)}
 </svg>'''
 
