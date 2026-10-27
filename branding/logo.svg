@@ -2,6 +2,8 @@
   <defs><radialGradient id="g" cx="0.3" cy="0.25" r="0.9">
     <stop offset="0" stop-color="#16304A"/><stop offset="1" stop-color="#0E1C2B"/></radialGradient></defs>
   <rect width="512" height="512" fill="url(#g)"/>
+  <!-- Discord crops avatars to a circle; the links reach 267px from the centre, so shrink to fit it. -->
+  <g transform="translate(256 256) scale(0.88) translate(-256 -256)">
   
   <defs>
     <clipPath id="ac1"><polygon points="-1000,-831.0 3000,3169.0 5000,-831.0"/></clipPath>
@@ -19,4 +21,5 @@
   <g mask="url(#am2)"><rect x="131" y="300" width="300" height="160" rx="80" fill="none" stroke="#3EE0A1" stroke-width="52"/></g>
   <polygon points="372.0,104.0 379.2,142.8 418.0,150.0 379.2,157.2 372.0,196.0 364.8,157.2 326.0,150.0 364.8,142.8" fill="#EAF4F0"/>
   <polygon points="410.0,196.0 412.8,211.2 428.0,214.0 412.8,216.8 410.0,232.0 407.2,216.8 392.0,214.0 407.2,211.2" fill="#3EE0A1"/>
+  </g>
 </svg>

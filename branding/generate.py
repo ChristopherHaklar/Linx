@@ -87,9 +87,12 @@ a_logo = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width
   <defs><radialGradient id="g" cx="0.3" cy="0.25" r="0.9">
     <stop offset="0" stop-color="{INK2}"/><stop offset="1" stop-color="{INK}"/></radialGradient></defs>
   <rect width="512" height="512" fill="url(#g)"/>
+  <!-- Discord crops avatars to a circle; the links reach 267px from the centre, so shrink to fit it. -->
+  <g transform="translate(256 256) scale(0.88) translate(-256 -256)">
   {link_L(MINT, dx=15)}
   {sparkle(372, 150, 46, PAPER)}
   {sparkle(410, 214, 18, MINT)}
+  </g>
 </svg>'''
 
 def mono(x, y, size, parts):
