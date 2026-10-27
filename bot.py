@@ -25,12 +25,15 @@ load_dotenv(ENV_FILE)
 
 TOKEN = os.environ.get("DISCORD_TOKEN")
 FIX_X = os.environ.get("FIX_X_LINKS", "true").lower() == "true"
+FIX_INSTAGRAM = os.environ.get("FIX_INSTAGRAM_LINKS", "true").lower() == "true"
+# Instagram embed fixers shut down often. Change this when the current one stops working.
+INSTAGRAM_FIX_HOST = os.environ.get("INSTAGRAM_FIX_HOST", "vxinstagram.com").strip() or "vxinstagram.com"
 SUPPRESS_ORIGINAL_EMBEDS = os.environ.get("SUPPRESS_ORIGINAL_EMBEDS", "true").lower() == "true"
 EXPAND_SHORT_LINKS = os.environ.get("EXPAND_SHORT_LINKS", "true").lower() == "true"
 DATA_DIR = Path(os.environ.get("LINX_DATA_DIR", HERE / "data"))
 # The environment sets each server's defaults; /server settings overrides them per server.
 DEFAULT_SERVER_SETTINGS = ServerSettings(
-    fix_x_links=FIX_X, expand_short_links=EXPAND_SHORT_LINKS, hide_original_embeds=SUPPRESS_ORIGINAL_EMBEDS,
+    fix_x_links=FIX_X, fix_instagram_links=FIX_INSTAGRAM, expand_short_links=EXPAND_SHORT_LINKS, hide_original_embeds=SUPPRESS_ORIGINAL_EMBEDS,
 )
 DELETE_EMOJI = "❌"
 
@@ -64,7 +67,10 @@ class LinxBot(discord.Client):
 
     async def clean_links(self, text: str, settings: ServerSettings) -> list[str]:
         expand = self.expander if settings.expand_short_links else None
-        return await find_cleanable_links_async(text, fix_x=settings.fix_x_links, expand=expand)
+        instagram_host = INSTAGRAM_FIX_HOST if settings.fix_instagram_links else None
+        return await find_cleanable_links_async(
+            text, fix_x=settings.fix_x_links, expand=expand, instagram_host=instagram_host
+        )
 
     def remember_owner(self, message_id: int, owner_id: int) -> None:
         self._owners[message_id] = owner_id
@@ -279,7 +285,7 @@ async def post_cleaned(interaction: discord.Interaction, text: str, nothing_to_c
 ANYWHERE = dict(guilds=True, dms=True, private_channels=True)
 
 
-@client.tree.command(name="clean", description="Remove tracking from a link (and convert X links to fixvx)")
+@client.tree.command(name="clean", description="Remove tracking from a link, and fix X and Instagram links so they embed")
 @app_commands.describe(link="The link or text containing links to clean")
 @app_commands.allowed_installs(guilds=True, users=True)
 @app_commands.allowed_contexts(**ANYWHERE)
@@ -307,6 +313,7 @@ client.tree.add_command(server)
 @app_commands.describe(
     auto_clean="Reply to links people post with a cleaned version (/clean always works)",
     fix_x_links="Rewrite x.com and twitter.com links to fixvx.com so they embed",
+    fix_instagram_links="Rewrite Instagram post and reel links to an embed-fixer site so they embed",
     expand_short_links="Follow short links like bit.ly and amzn.to so the real link can be cleaned",
     hide_original_embeds="Hide the embed on the original message after replying",
     delete_reaction="Add a ❌ the poster (or a moderator) can click to delete Linx's reply",
@@ -315,12 +322,14 @@ async def server_settings_command(
     interaction: discord.Interaction,
     auto_clean: bool | None = None,
     fix_x_links: bool | None = None,
+    fix_instagram_links: bool | None = None,
     expand_short_links: bool | None = None,
     hide_original_embeds: bool | None = None,
     delete_reaction: bool | None = None,
 ) -> None:
     changes = {k: v for k, v in {
-        "auto_clean": auto_clean, "fix_x_links": fix_x_links, "expand_short_links": expand_short_links,
+        "auto_clean": auto_clean, "fix_x_links": fix_x_links, "fix_instagram_links": fix_instagram_links,
+        "expand_short_links": expand_short_links,
         "hide_original_embeds": hide_original_embeds, "delete_reaction": delete_reaction,
     }.items() if v is not None}
     store = client.server_settings

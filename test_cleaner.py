@@ -16,6 +16,33 @@ class CleanUrlTests(unittest.TestCase):
         self.assertEqual(clean_url("https://mobile.x.com/u/status/1"), "https://fixvx.com/u/status/1")
         self.assertEqual(clean_url("https://www.x.com/u/status/1"), "https://fixvx.com/u/status/1")
 
+    def test_instagram_to_embed_fixer(self):
+        host = "vxinstagram.com"
+        self.assertEqual(clean_url("https://www.instagram.com/reel/Deut5J9KA8j/", instagram_host=host),
+                         "https://vxinstagram.com/reel/Deut5J9KA8j/")
+        self.assertEqual(clean_url("https://instagram.com/p/De6YG4Ls4tv/?xtok=abc", instagram_host=host),
+                         "https://vxinstagram.com/p/De6YG4Ls4tv/")
+        self.assertEqual(clean_url("https://m.instagram.com/reels/abc/", instagram_host=host),
+                         "https://vxinstagram.com/reels/abc/")
+        self.assertEqual(clean_url("https://www.instagram.com/someone/p/abc/?igsh=1", instagram_host=host),
+                         "https://vxinstagram.com/someone/p/abc/")
+
+    def test_instagram_non_posts_stay_on_instagram(self):
+        host = "vxinstagram.com"
+        self.assertEqual(clean_url("https://www.instagram.com/stories/someone/123/?igsh=1", instagram_host=host),
+                         "https://www.instagram.com/stories/someone/123/")
+        self.assertEqual(clean_url("https://www.instagram.com/someone/", instagram_host=host),
+                         "https://www.instagram.com/someone/")
+        self.assertEqual(clean_url("https://l.instagram.com/p/abc/", instagram_host=host),
+                         "https://l.instagram.com/p/abc/")
+
+    def test_instagram_not_rewritten_by_default(self):
+        self.assertEqual(clean_url("https://www.instagram.com/reel/abc/"), "https://www.instagram.com/reel/abc/")
+
+    def test_instagram_username_post_drops_query(self):
+        self.assertEqual(clean_url("https://www.instagram.com/someone/p/abc/?xtok=1&zz=2"),
+                         "https://www.instagram.com/someone/p/abc/")
+
     def test_fix_x_disabled(self):
         self.assertEqual(clean_url("https://x.com/u/status/1?s=20", fix_x=False), "https://x.com/u/status/1")
 
@@ -324,6 +351,12 @@ class FindLinksTests(unittest.TestCase):
     def test_no_embed_link_stays_without_embed(self):
         self.assertEqual(find_cleanable_links("<https://youtu.be/abc?si=xyz>"), ["<https://youtu.be/abc>"])
         self.assertEqual(find_cleanable_links("||<https://youtu.be/abc?si=xyz>||"), ["||<https://youtu.be/abc>||"])
+
+    def test_clean_instagram_link_still_rewritten(self):
+        text = "https://www.instagram.com/reel/Deut5J9KA8j/"
+        self.assertEqual(find_cleanable_links(text), [])
+        self.assertEqual(find_cleanable_links(text, instagram_host="vxinstagram.com"),
+                         ["https://vxinstagram.com/reel/Deut5J9KA8j/"])
 
     def test_links_in_code_ignored(self):
         self.assertEqual(find_cleanable_links("`https://youtu.be/abc?si=xyz`"), [])

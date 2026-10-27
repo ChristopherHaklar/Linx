@@ -1,4 +1,4 @@
-"""Link cleaning: strips tracking query params and rewrites X/Twitter links to fixvx.com."""
+"""Link cleaning: strips tracking query params and rewrites X/Twitter and Instagram links to embed fixers."""
 
 import asyncio
 import re
@@ -146,7 +146,10 @@ INSTAGRAM_HOST = _host(r"instagram\.com")
 # Post/reel/TV/story permalinks: the shortcode in the path is the whole identity, so every query
 # param is a share token. Meta rotates the token's name (igshid -> srtk -> cplk -> ...), so rather
 # than chase each new one, drop the entire query on these paths and future tokens die with it.
-INSTAGRAM_CONTENT_RE = re.compile(r"/(?:p|reel|reels|tv)/[^/]+|/stories/[^/]+/[^/]+", re.IGNORECASE)
+INSTAGRAM_REWRITE_HOST = re.compile(r"(?:www\.|m\.)?instagram\.com")  # not l.instagram.com etc.
+# Post links may start with the poster's username (/someone/p/<code>/).
+INSTAGRAM_POST_RE = re.compile(r"(?:/[^/]+)?/(?:p|reel|reels|tv)/[^/]+", re.IGNORECASE)
+INSTAGRAM_CONTENT_RE = re.compile(INSTAGRAM_POST_RE.pattern + r"|/stories/[^/]+/[^/]+", re.IGNORECASE)
 
 FIX_X_HOST = "fixvx.com"
 
@@ -227,8 +230,10 @@ def _filter_query(query: str, keep: Callable[[str], bool]) -> str:
     return query if len(kept) == len(segments) else "&".join(kept)
 
 
-def clean_url(url: str, fix_x: bool = True) -> str:
-    """Return the URL with tracking params removed and (optionally) X links sent to fixvx."""
+def clean_url(url: str, fix_x: bool = True, instagram_host: str | None = None) -> str:
+    """Return the URL with tracking params removed and (optionally) X links sent to fixvx.
+    With `instagram_host`, Instagram post and reel links go to that embed-fixer site instead,
+    because Discord shows no embed for instagram.com. Story links stay on Instagram."""
     url = _unwrap(url)
     try:
         parts = urlsplit(url)
@@ -265,6 +270,8 @@ def clean_url(url: str, fix_x: bool = True) -> str:
 
     if fix_x and X_REWRITE_HOST.fullmatch(host):
         netloc = FIX_X_HOST
+    elif instagram_host and INSTAGRAM_REWRITE_HOST.fullmatch(host) and INSTAGRAM_POST_RE.match(path):
+        netloc = instagram_host
 
     return urlunsplit((parts.scheme, netloc, path, query, fragment))
 
@@ -311,10 +318,12 @@ def extract_urls(text: str) -> list[str]:
     return [url for url, _, _ in _find_links(text)]
 
 
-def _collect(links: list[tuple[str, bool, bool]], targets: list[str], fix_x: bool) -> list[str]:
+def _collect(
+    links: list[tuple[str, bool, bool]], targets: list[str], fix_x: bool, instagram_host: str | None
+) -> list[str]:
     results: list[str] = []
     for (url, spoilered, no_embed), target in zip(links, targets):
-        cleaned = clean_url(target, fix_x=fix_x)
+        cleaned = clean_url(target, fix_x=fix_x, instagram_host=instagram_host)
         if cleaned == url:
             continue
         shown = _format(cleaned, spoilered, no_embed)
@@ -323,18 +332,19 @@ def _collect(links: list[tuple[str, bool, bool]], targets: list[str], fix_x: boo
     return results
 
 
-def find_cleanable_links(text: str, fix_x: bool = True) -> list[str]:
+def find_cleanable_links(text: str, fix_x: bool = True, instagram_host: str | None = None) -> list[str]:
     """Return cleaned versions of every link in `text` that actually changed (deduped, in order),
     keeping each link's spoiler and no-embed markup. Links in code are skipped."""
     links = _find_links(text)
-    return _collect(links, [url for url, _, _ in links], fix_x)
+    return _collect(links, [url for url, _, _ in links], fix_x, instagram_host)
 
 
 async def find_cleanable_links_async(
-    text: str, fix_x: bool = True, expand: Callable[[str], Awaitable[str]] | None = None
+    text: str, fix_x: bool = True, expand: Callable[[str], Awaitable[str]] | None = None,
+    instagram_host: str | None = None,
 ) -> list[str]:
     """Like find_cleanable_links, but first runs each link through `expand` (e.g. to follow short links)."""
     links = _find_links(text)
     urls = [url for url, _, _ in links]
     targets = await asyncio.gather(*(expand(u) for u in urls)) if expand else urls
-    return _collect(links, list(targets), fix_x)
+    return _collect(links, list(targets), fix_x, instagram_host)

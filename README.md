@@ -2,7 +2,7 @@
 
 ![Linx](branding/banner.png)
 
-Linx is a Discord bot that reads messages for links. It removes tracking parameters, such as `utm_*`, `fbclid`, `si` and `?s=20&t=...`. It also changes `x.com` and `twitter.com` links to `fixvx.com`, so Discord shows a full embed for them.
+Linx is a Discord bot that reads messages for links. It removes tracking parameters, such as `utm_*`, `fbclid`, `si` and `?s=20&t=...`. It also changes X and Instagram links to embed-fixer sites, so Discord shows a full embed for them.
 
 When a message has a link that Linx can clean, Linx replies with the clean version. Linx can also hide the embed on the original message. To clean a link yourself, use the `/clean <link>` slash command. You can also right-click a message and select **Apps → Clean links**.
 
@@ -51,6 +51,7 @@ Linx does **not** remove `ref` from every link, because some sites use it for re
 **Other changes**
 
 - **X / Twitter embeds:** Linx changes `x.com` and `twitter.com` links to `fixvx.com`. This includes `www.`, `m.` and `mobile.` links. To disable this, set `FIX_X_LINKS=false`.
+- **Instagram embeds:** Discord shows no embed for Instagram links. So Linx changes Instagram post and reel links to `vxinstagram.com`, which gives Discord the video or image. Story and profile links stay on Instagram. To disable this, set `FIX_INSTAGRAM_LINKS=false`. To use a different embed-fixer site, set `INSTAGRAM_FIX_HOST`. These sites often stop working, so check this first when Instagram embeds fail.
 - **Product links:** Linx reduces these links to the product ID: Amazon `/dp/<ASIN>` (plus `smid` if present), Best Buy `/site/<sku>.p`, Walmart `/ip/<id>`, Etsy `/listing/<id>/<name>`. On other Amazon pages, Linx removes the `/ref=...` path segment.
 - **Discord formatting:**
   - A spoilered link (`||link||`) gets a spoilered reply.
@@ -83,13 +84,14 @@ People with the **Manage Server** permission control Linx in their server. Linx 
 - `/server settings` shows the current settings. To change a setting, give its option:
   - `auto_clean`: reply to links that people post. When this is off, Linx answers only `/clean` and **Clean links**.
   - `fix_x_links`: change X links to fixvx.
+  - `fix_instagram_links`: change Instagram post and reel links to the embed-fixer site.
   - `expand_short_links`: expand short links such as `bit.ly`.
   - `hide_original_embeds`: hide the embed on the original message after Linx replies.
   - `delete_reaction`: the ❌ reaction. See [Deleting Linx's reply](#deleting-linxs-reply).
 - `/server ignore-channel` stops automatic cleaning in a channel or in a full category. Threads use the setting of their channel. `/clean` still works in an ignored channel.
 - `/server watch-channel` starts automatic cleaning again in an ignored channel.
 
-`FIX_X_LINKS`, `EXPAND_SHORT_LINKS` and `SUPPRESS_ORIGINAL_EMBEDS` set the default for each server that did not change that setting. `EXPAND_SHORT_LINKS=false` disables expansion in all servers.
+`FIX_X_LINKS`, `FIX_INSTAGRAM_LINKS`, `EXPAND_SHORT_LINKS` and `SUPPRESS_ORIGINAL_EMBEDS` set the default for each server that did not change that setting. `EXPAND_SHORT_LINKS=false` disables expansion in all servers.
 
 ## Deleting Linx's reply
 

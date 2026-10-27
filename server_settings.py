@@ -8,6 +8,7 @@ from pathlib import Path
 TOGGLES = {
     "auto_clean": "Clean links automatically",
     "fix_x_links": "Rewrite X links to fixvx",
+    "fix_instagram_links": "Rewrite Instagram links so they embed",
     "expand_short_links": "Expand short links",
     "hide_original_embeds": "Hide the original message's embed",
     "delete_reaction": "❌ reaction to delete Linx's reply",
@@ -18,6 +19,7 @@ TOGGLES = {
 class ServerSettings:
     auto_clean: bool = True
     fix_x_links: bool = True
+    fix_instagram_links: bool = True
     expand_short_links: bool = True
     hide_original_embeds: bool = True
     delete_reaction: bool = True
