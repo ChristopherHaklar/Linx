@@ -5,7 +5,11 @@ import re
 from collections.abc import Awaitable, Callable
 from urllib.parse import parse_qsl, unquote, unquote_plus, urlsplit, urlunsplit
 
-URL_RE = re.compile(r"https?://[^\s<>\"'`]+", re.IGNORECASE)
+# A `||` ends the link: it's Discord's spoiler marker, not part of the URL.
+URL_RE = re.compile(r"https?://(?:[^\s<>\"'`|]|\|(?!\|))+", re.IGNORECASE)
+# Discord markdown that changes how a link is shown. Code is meant literally, so links in it are left alone.
+CODE_RE = re.compile(r"```.*?```|`[^`\n]+`", re.DOTALL)
+SPOILER_RE = re.compile(r"\|\|.+?\|\|", re.DOTALL)
 
 # Query params removed from every URL (compared case-insensitively). Each exists to identify
 # a person, a campaign or a click; none changes which page you land on.
@@ -280,30 +284,57 @@ def _split_trailing(url: str) -> tuple[str, str]:
     return url, tail
 
 
+def _find_links(text: str) -> list[tuple[str, bool, bool]]:
+    """Return (url, spoilered, no_embed) for every link outside code. A link is spoilered when it sits
+    inside `||...||`, and has no embed when wrapped in `<...>`."""
+    text = CODE_RE.sub(lambda m: " " * len(m.group(0)), text)
+    spoilers = [m.span() for m in SPOILER_RE.finditer(text)]
+    links = []
+    for match in URL_RE.finditer(text):
+        url, _ = _split_trailing(match.group(0))
+        start, end = match.start(), match.start() + len(url)
+        spoilered = any(s < start and end < e for s, e in spoilers)
+        no_embed = text[start - 1:start] == "<" and text[end:end + 1] == ">"
+        links.append((url, spoilered, no_embed))
+    return links
+
+
+def _format(url: str, spoilered: bool, no_embed: bool) -> str:
+    """Show a cleaned link the way it was posted: still spoilered, still without an embed."""
+    if no_embed:
+        url = f"<{url}>"
+    return f"||{url}||" if spoilered else url
+
+
 def extract_urls(text: str) -> list[str]:
-    """Return every http(s) link in `text`, without sentence-ending punctuation."""
-    return [_split_trailing(match.group(0))[0] for match in URL_RE.finditer(text)]
+    """Return every http(s) link in `text` outside code, without sentence-ending punctuation."""
+    return [url for url, _, _ in _find_links(text)]
 
 
-def _collect(urls: list[str], targets: list[str], fix_x: bool) -> list[str]:
+def _collect(links: list[tuple[str, bool, bool]], targets: list[str], fix_x: bool) -> list[str]:
     results: list[str] = []
-    for url, target in zip(urls, targets):
+    for (url, spoilered, no_embed), target in zip(links, targets):
         cleaned = clean_url(target, fix_x=fix_x)
-        if cleaned != url and cleaned not in results:
-            results.append(cleaned)
+        if cleaned == url:
+            continue
+        shown = _format(cleaned, spoilered, no_embed)
+        if shown not in results:
+            results.append(shown)
     return results
 
 
 def find_cleanable_links(text: str, fix_x: bool = True) -> list[str]:
-    """Return cleaned versions of every link in `text` that actually changed (deduped, in order)."""
-    urls = extract_urls(text)
-    return _collect(urls, urls, fix_x)
+    """Return cleaned versions of every link in `text` that actually changed (deduped, in order),
+    keeping each link's spoiler and no-embed markup. Links in code are skipped."""
+    links = _find_links(text)
+    return _collect(links, [url for url, _, _ in links], fix_x)
 
 
 async def find_cleanable_links_async(
     text: str, fix_x: bool = True, expand: Callable[[str], Awaitable[str]] | None = None
 ) -> list[str]:
     """Like find_cleanable_links, but first runs each link through `expand` (e.g. to follow short links)."""
-    urls = extract_urls(text)
+    links = _find_links(text)
+    urls = [url for url, _, _ in links]
     targets = await asyncio.gather(*(expand(u) for u in urls)) if expand else urls
-    return _collect(urls, list(targets), fix_x)
+    return _collect(links, list(targets), fix_x)

@@ -52,6 +52,7 @@ Linx only replies when the cleaned link is different from the original. Unknown 
 
 - **X / Twitter embeds:** `x.com` and `twitter.com` links (including `www.`, `m.` and `mobile.`) are rewritten to `fixvx.com`. Turn off with `FIX_X_LINKS=false`.
 - **Product links reduced to the product ID:** Amazon `/dp/<ASIN>` (plus `smid` if present), Best Buy `/site/<sku>.p`, Walmart `/ip/<id>`, Etsy `/listing/<id>/<name>`. Other Amazon pages lose their `/ref=...` path segment.
+- **Discord formatting is respected:** a spoilered link (`||link||`) gets a spoilered reply, a link posted without an embed (`<link>`) gets a reply without one, and links inside `code` or code blocks are ignored.
 - **Tracking after the `#`** (e.g. `#utm_source=...`) is removed. Page anchors, app routes (`#/inbox`) and text highlights (`#:~:text=`) are left alone.
 - **Redirect wrappers** are unwrapped to the real destination, including nested and double-encoded ones:
   - Google `google.com/url?q=` and AMP pages (`google.com/amp/s/...`)

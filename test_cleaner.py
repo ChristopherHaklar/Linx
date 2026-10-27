@@ -306,6 +306,31 @@ class FindLinksTests(unittest.TestCase):
     def test_no_links(self):
         self.assertEqual(find_cleanable_links("hello there"), [])
 
+    def test_spoilered_link_stays_spoilered(self):
+        self.assertEqual(find_cleanable_links("||https://youtu.be/abc?si=xyz||"), ["||https://youtu.be/abc||"])
+        self.assertEqual(
+            find_cleanable_links("ending: ||it was him https://youtu.be/abc?si=xyz||"), ["||https://youtu.be/abc||"]
+        )
+
+    def test_spoiler_markers_not_part_of_url(self):
+        self.assertEqual(
+            find_cleanable_links("||https://example.com/a?id=5&utm_source=x||"), ["||https://example.com/a?id=5||"]
+        )
+
+    def test_unspoilered_link_next_to_spoiler(self):
+        text = "||secret|| https://youtu.be/abc?si=xyz"
+        self.assertEqual(find_cleanable_links(text), ["https://youtu.be/abc"])
+
+    def test_no_embed_link_stays_without_embed(self):
+        self.assertEqual(find_cleanable_links("<https://youtu.be/abc?si=xyz>"), ["<https://youtu.be/abc>"])
+        self.assertEqual(find_cleanable_links("||<https://youtu.be/abc?si=xyz>||"), ["||<https://youtu.be/abc>||"])
+
+    def test_links_in_code_ignored(self):
+        self.assertEqual(find_cleanable_links("`https://youtu.be/abc?si=xyz`"), [])
+        self.assertEqual(find_cleanable_links("```\nhttps://youtu.be/abc?si=xyz\n```"), [])
+        text = "`https://youtu.be/abc?si=xyz` but https://youtu.be/def?si=xyz"
+        self.assertEqual(find_cleanable_links(text), ["https://youtu.be/def"])
+
 
 class ExpandTests(unittest.IsolatedAsyncioTestCase):
     async def test_expanded_link_is_cleaned(self):
