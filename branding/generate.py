@@ -13,12 +13,11 @@ def sparkle(cx, cy, r, fill, waist=0.22):
         pts.append(f"{cx + rr*math.cos(a):.1f},{cy + rr*math.sin(a):.1f}")
     return f'<polygon points="{" ".join(pts)}" fill="{fill}"/>'
 
-def link_L(color, sw=36, gap=12, dx=0, dy=0, uid="a"):
+def link_L(color, sw=52, gap=12, dx=0, dy=0, uid="a"):
     """Two interlocked capsules arranged as an L, overlapping at the corner: the stem's rounded bottom
     and the foot's rounded left end each pass through the other, offset diagonally by `off`.
-    With r=70 and off=58 the curves cross at about 75 degrees and stay 22px apart (after stroke)
-    where they run side by side."""
-    r, off = 70, 58
+    The stroke is kept heavy so the links still read at avatar size."""
+    r, off = 80, 56
     stem = dict(x=60+dx, y=50+dy, w=2*r, h=354, r=r)
     sc = (stem["x"] + r, stem["y"] + stem["h"] - r)        # centre of the stem's bottom curve
     fc = (sc[0] + off, sc[1] + off)                        # centre of the foot's left curve
@@ -31,13 +30,14 @@ def link_L(color, sw=36, gap=12, dx=0, dy=0, uid="a"):
     # Lower-left crossing: where the two curves meet (the circle intersection below-left). Stem goes over.
     mid, k = ((sc[0] + fc[0]) / 2, (sc[1] + fc[1]) / 2), math.sqrt(r*r - off*off / 2) / math.sqrt(2)
     p2 = (round(mid[0] - k, 1), round(mid[1] + k, 1))
-    # Zones around each crossing where the gap is cut. Big enough that the cut follows the upper link's
-    # outline, small enough not to reach the other crossing (elsewhere the links are kept far enough apart).
-    gr = 50
+    # The crossings sit on opposite sides of the diagonal x - y = c through the overlap's centre, so
+    # each gap is cut within its own half-plane. Round zones left slivers once the stroke got heavy.
+    c = mid[0] - mid[1]
+    line = f"-1000,{-1000 - c} 3000,{3000 - c}"
     return f'''
   <defs>
-    <clipPath id="{uid}c1"><circle cx="{p1[0]}" cy="{p1[1]}" r="{gr}"/></clipPath>
-    <clipPath id="{uid}c2"><circle cx="{p2[0]}" cy="{p2[1]}" r="{gr}"/></clipPath>
+    <clipPath id="{uid}c1"><polygon points="{line} 5000,{-1000 - c}"/></clipPath>
+    <clipPath id="{uid}c2"><polygon points="{line} -3000,{3000 - c}"/></clipPath>
     <mask id="{uid}m1" maskUnits="userSpaceOnUse" x="0" y="0" width="2000" height="2000">
       <rect width="2000" height="2000" fill="#fff"/>
       <g clip-path="url(#{uid}c1)">{cap(foot, 2*gap, "#000")}</g>
