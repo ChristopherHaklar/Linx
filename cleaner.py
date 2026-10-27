@@ -86,7 +86,9 @@ SITE_RULES: list[tuple[re.Pattern, set[str]]] = [(host, {p.lower() for p in para
     (AMAZON_HOST, {"ref", "ref_", "tag", "psc", "th", "linkcode", "creative", "camp", "creativeasin", "ascsubtag",
                    "keywords", "qid", "sr", "crid", "sprefix", "dib", "dib_tag", "content-id", "_encoding",
                    "pd_rd_w", "pd_rd_wg", "pd_rd_r", "pd_rd_i", "pd_rd_dr", "pf_rd_p", "pf_rd_r", "pf_rd_s",
-                   "pf_rd_t", "pf_rd_i", "pf_rd_m", "social_share", "starsleft", "linkid", "ie", "rsd", "edk"}),
+                   "pf_rd_t", "pf_rd_i", "pf_rd_m", "social_share", "starsleft", "linkid", "ie", "rsd", "edk",
+                   "associatetag", "maas", "aa_campaignid", "aa_adgroupid", "aa_creativeid", "btn_type",
+                   "btn_ref", "gaoptinstatus", "channelid"}),
     (_host(rf"(?:aliexpress|temu)\.{TLD}"), {"spm", "scm", "pvid", "algo_pvid", "algo_exp_id", "aff_platform",
                                             "aff_trace_key", "aff_short_key", "aff_fcid", "aff_fsk",
                                             "aff_request_id", "terminal_id", "sk", "btsid", "ws_ab_test",
@@ -127,12 +129,15 @@ UNWRAPPERS: list[tuple[re.Pattern, re.Pattern | None, tuple[str, ...]]] = [
     (_host(r"xing\.com", subdomains=False), re.compile(r"/social/external_link.*"), ("url",)),
     (re.compile(r"(?:www\.)?slack-redir\.net"), None, ("url",)),
     (_host(r"getpocket\.com", subdomains=False), re.compile(r"/redirect"), ("url",)),
+    (AMAZON_HOST, re.compile(r"/gp/redirect\.html"), ("location",)),
 ]
 GOOGLE_AMP_PATH = re.compile(r"/amp/(?:s/)?(.+)")
 
 # Product pages reduced to their ID: Amazon /dp/<ASIN>, Best Buy /site/<sku>.p, Walmart /ip/<id>,
 # Etsy /listing/<id>/<name> (with an optional country prefix like /uk).
-AMAZON_PRODUCT_RE = re.compile(r"/(?:dp|gp/product|gp/aw/d)/([A-Z0-9]{10})(?=/|$)", re.IGNORECASE)
+# Old-style /exec/obidos/ASIN/<ASIN>/<tag> and /o/ASIN/... links carry the affiliate tag in the path.
+AMAZON_PRODUCT_RE = re.compile(r"/(?:dp|gp/product|gp/aw/d|(?:exec/obidos|o)/ASIN)/([A-Z0-9]{10})(?=/|$)",
+                               re.IGNORECASE)
 AMAZON_PRODUCT_KEEP = ("smid",)  # the ASIN already pins the item and variant; smid picks the seller
 BESTBUY_HOST = _host(r"bestbuy\.com")
 BESTBUY_PRODUCT_RE = re.compile(r"/site/(?:[^/]+/)?(\d+)\.p")

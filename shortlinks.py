@@ -18,6 +18,8 @@ SHORTENERS = {
     "amzn.eu": AMAZON_HOST,
     "amzn.asia": AMAZON_HOST,
     "a.co": AMAZON_HOST,
+    "link.amazon": AMAZON_HOST,  # newer share links; they bounce through amzlinks.in
+    "amzlinks.in": AMAZON_HOST,
     "vm.tiktok.com": TIKTOK_HOST,
     "vt.tiktok.com": TIKTOK_HOST,
     "spotify.link": r"open\.spotify\.com",

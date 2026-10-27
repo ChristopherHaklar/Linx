@@ -39,7 +39,7 @@ Linx does **not** remove `ref` from every link, because some sites use it for re
 | Pinterest | `invite_code`, `sender`, `sfo` |
 | Bing | `cvid`, `form` |
 | Google search | `ei`, `ved`, `oq`, `gs_lp`, `gs_lcrp`, `sca_esv`, `sxsrf`, `sclient`, `client`, `source`, `rlz`, `cd`, `cad`, `rct`, `hs`, `num` and other parameters that only the search page uses. Linx keeps `q`, `tbm`, `udm`, `tbs`, `start` and `hl`. |
-| Amazon | `tag`, `ref`, `ref_`, `psc`, `th`, `linkCode`, `linkId`, `creative`, `creativeASIN`, `camp`, `ascsubtag`, `keywords`, `qid`, `sr`, `crid`, `sprefix`, `dib`, `dib_tag`, `content-id`, `_encoding`, `pd_rd_*`, `pf_rd_*`, `social_share`, `starsleft`, `ie`, `rsd`, `edk`. Product links keep only `smid` (the seller). Linx removes all other parameters from them. |
+| Amazon | `tag`, `ref`, `ref_`, `psc`, `th`, `linkCode`, `linkId`, `creative`, `creativeASIN`, `camp`, `ascsubtag`, `keywords`, `qid`, `sr`, `crid`, `sprefix`, `dib`, `dib_tag`, `content-id`, `_encoding`, `pd_rd_*`, `pf_rd_*`, `social_share`, `starsleft`, `ie`, `rsd`, `edk`, `AssociateTag`, `maas`, `aa_campaignid`, `aa_adgroupid`, `aa_creativeid`, `btn_type`, `btn_ref`, `gaOptInStatus`, `channelId`. Product links keep only `smid` (the seller). Linx removes all other parameters from them. |
 | AliExpress / Temu | `spm`, `scm`, `pvid`, `algo_pvid`, `algo_exp_id`, `aff_*`, `terminal_id`, `sk`, `btsid`, `ws_ab_test`, `pdp_npi`, `curPageLogUid`, `_t`, `_x_ads_channel`, `_x_sessn_id`, `refer_page_name`, `refer_page_id`, `srcSp`, `top_gallery_url` |
 | eBay | `_trkparms`, `_trksid`, `mkcid`, `mkrid`, `mkevt`, `campid`, `customid`, `toolid`, `siteid`, `amdata`, `norover`, `ssspo`, `sssrc`, `ssuid`, `widget_ver` |
 | Etsy | `click_key`, `click_sum`, `frs`, `sc_g`, `organic_search_click`, `ga_order`, `ga_search_type`, `ga_view_type`, `ga_search_query`, `ref`, `ls`, `sr_prefetch`, `pf_from`, `cns`, `sts`, `content_source`, `logging_key`, `plkey`, `pro`, `sca`. Linx removes all parameters from listing links. |
@@ -52,7 +52,7 @@ Linx does **not** remove `ref` from every link, because some sites use it for re
 
 - **X / Twitter embeds:** Linx changes `x.com` and `twitter.com` links to `fixvx.com`. This includes `www.`, `m.` and `mobile.` links. To disable this, set `FIX_X_LINKS=false`.
 - **Instagram embeds:** Discord shows no embed for Instagram links. So Linx changes Instagram post and reel links to `vxinstagram.com`, which gives Discord the video or image. Story and profile links stay on Instagram. To disable this, set `FIX_INSTAGRAM_LINKS=false`. To use a different embed-fixer site, set `INSTAGRAM_FIX_HOST`. These sites often stop working, so check this first when Instagram embeds fail.
-- **Product links:** Linx reduces these links to the product ID: Amazon `/dp/<ASIN>` (plus `smid` if present), Best Buy `/site/<sku>.p`, Walmart `/ip/<id>`, Etsy `/listing/<id>/<name>`. On other Amazon pages, Linx removes the `/ref=...` path segment.
+- **Product links:** Linx reduces these links to the product ID: Amazon `/dp/<ASIN>` (plus `smid` if present; old `/exec/obidos/ASIN/...` links too, which have the affiliate tag in the path), Best Buy `/site/<sku>.p`, Walmart `/ip/<id>`, Etsy `/listing/<id>/<name>`. On other Amazon pages, Linx removes the `/ref=...` path segment.
 - **Discord formatting:**
   - A spoilered link (`||link||`) gets a spoilered reply.
   - A link without an embed (`<link>`) gets a reply without an embed.
@@ -62,9 +62,9 @@ Linx does **not** remove `ref` from every link, because some sites use it for re
   - Google `google.com/url?q=` and AMP pages (`google.com/amp/s/...`)
   - YouTube `/redirect` (links in video descriptions)
   - Facebook `l.facebook.com`, `lm.facebook.com`, `l.messenger.com`, `l.instagram.com`
-  - Outlook Safe Links, Steam's link filter, `out.reddit.com`, Tumblr `t.umblr.com`, Medium `/r/`, LinkedIn `/redir/redirect`, XING, Slack, VK, Pocket, DeviantArt and `href.li`
+  - Outlook Safe Links, Steam's link filter, `out.reddit.com`, Tumblr `t.umblr.com`, Medium `/r/`, LinkedIn `/redir/redirect`, XING, Slack, VK, Pocket, DeviantArt, `href.li` and Amazon `/gp/redirect.html`
 - **Short links:** Linx expands short links, then cleans them. Linx reads only the redirect from the shortener. It never loads the destination page. If a short code is dead and goes to a homepage, Linx does not change the link. To disable this, set `EXPAND_SHORT_LINKS=false`.
-  - Site shorteners: `amzn.to`, `a.co`, `amzn.eu`, `amzn.asia`, `vm.tiktok.com`, `vt.tiktok.com`, `tiktok.com/t/...`, Reddit `/r/<sub>/s/...`, `spotify.link`, `spoti.fi`, `pin.it`, `apple.co`, `fb.me`
+  - Site shorteners: `amzn.to`, `a.co`, `amzn.eu`, `amzn.asia`, `link.amazon`, `amzlinks.in`, `vm.tiktok.com`, `vt.tiktok.com`, `tiktok.com/t/...`, Reddit `/r/<sub>/s/...`, `spotify.link`, `spoti.fi`, `pin.it`, `apple.co`, `fb.me`
   - General shorteners: `bit.ly`, `j.mp`, `t.co`, `tinyurl.com`, `ow.ly`, `buff.ly`, `rb.gy`, `cutt.ly`, `is.gd`, `v.gd`, `rebrand.ly`, `tiny.cc`, `shorturl.at`, `s.id`, `dlvr.it`, `trib.al`, `bl.ink`, `smarturl.it`. For these, Linx always replies to show the real destination.
 
 ## Setup

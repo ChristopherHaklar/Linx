@@ -116,6 +116,27 @@ class CleanUrlTests(unittest.TestCase):
             "https://www.amazon.com/s?k=usb+cable",
         )
 
+    def test_amazon_path_affiliate_tag_removed(self):
+        for url in ["https://www.amazon.com/exec/obidos/ASIN/B08N5WRWNW/aff-20",
+                    "https://www.amazon.com/o/ASIN/B08N5WRWNW/aff-20"]:
+            self.assertEqual(clean_url(url), "https://www.amazon.com/dp/B08N5WRWNW", url)
+
+    def test_amazon_redirect_unwrapped(self):
+        self.assertEqual(
+            clean_url("https://www.amazon.com/gp/redirect.html?ie=UTF8&location=https%3A%2F%2Fwww.amazon.com%2Fdp%2FB08N5WRWNW%3Ftag%3Daff-20&tag=aff-20"),
+            "https://www.amazon.com/dp/B08N5WRWNW",
+        )
+
+    def test_amazon_cart_and_attribution_params(self):
+        self.assertEqual(
+            clean_url("https://www.amazon.com/gp/aws/cart/add.html?ASIN.1=B08N5WRWNW&Quantity.1=1&AssociateTag=aff-20"),
+            "https://www.amazon.com/gp/aws/cart/add.html?ASIN.1=B08N5WRWNW&Quantity.1=1",
+        )
+        self.assertEqual(
+            clean_url("https://www.amazon.com/stores/Brand/page/ABC?maas=maas_adg_1&aa_campaignid=x&aa_adgroupid=y&aa_creativeid=z"),
+            "https://www.amazon.com/stores/Brand/page/ABC",
+        )
+
     def test_amazon_lookalike_untouched(self):
         url = "https://amazon.example.com/Thing/dp/B0B2MLTP7K/ref=x"
         self.assertEqual(clean_url(url), url)
@@ -383,7 +404,8 @@ class ShortLinkRuleTests(unittest.TestCase):
         for url in ["https://amzn.to/3abc", "https://a.co/d/7hG8jKq", "https://vm.tiktok.com/ZMabc/",
                     "https://www.tiktok.com/t/ZTRabc123/", "https://www.reddit.com/r/pics/s/abc123XYZ",
                     "https://spotify.link/abc", "https://pin.it/abc", "https://bit.ly/3xyz",
-                    "https://t.co/abc", "https://tinyurl.com/abc", "https://spoti.fi/abc"]:
+                    "https://t.co/abc", "https://tinyurl.com/abc", "https://spoti.fi/abc",
+                    "https://link.amazon/B08Z1e0IB", "https://amzlinks.in/B08Z1e0IB"]:
             self.assertIsNotNone(short_link_target(url), url)
 
     def test_regular_links_not_requested(self):
