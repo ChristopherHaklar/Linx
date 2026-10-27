@@ -8,7 +8,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY cleaner.py shortlinks.py notify.py bot.py ./
+COPY cleaner.py shortlinks.py notify.py server_settings.py bot.py ./
 
 RUN useradd --system --no-create-home linx && mkdir /data && chown linx /data
 USER linx

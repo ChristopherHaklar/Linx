@@ -4,7 +4,7 @@
 
 Linx is a Discord bot that watches messages for links, strips tracking parameters (`utm_*`, `fbclid`, `si`, `?s=20&t=...`, etc.), and rewrites `x.com` / `twitter.com` links to `fixvx.com` so they embed properly.
 
-When a message has a link that can be cleaned, the bot replies with the cleaned version and (optionally) hides the original message's embed. There's also a `/clean <link>` slash command.
+When a message has a link that can be cleaned, the bot replies with the cleaned version and (optionally) hides the original message's embed. There's also a `/clean <link>` slash command and a **Clean links** option when you right-click a message (under **Apps**).
 
 ## What gets cleaned
 
@@ -69,8 +69,31 @@ Linx only replies when the cleaned link is different from the original. Unknown 
 2. On its **Bot** page, click **Reset Token** and copy the token, then enable **Message Content Intent** and save.
 3. Double-click **`start.bat`**. On first run it installs everything and asks you to paste the token (saved to `.env`).
 4. Open the invite link Linx prints in the window to add it to your server.
+5. Optional, so people can use Linx in servers it isn't in and in DMs: on the app's **Installation** page, tick **User Install** and give it the `applications.commands` scope. Linx prints a second link for adding it to your own account.
 
 Keep the window open while you want the bot online. If the token is wrong, Linx clears it and asks again next run.
+
+## Server settings
+
+People with **Manage Server** control Linx in their server. Settings are private replies, so no one else sees them.
+
+- `/server settings` shows the current settings. Give any option to change it:
+  - `auto_clean`: reply to links people post. With it off, Linx only answers `/clean` and **Clean links**.
+  - `fix_x_links`: rewrite X links to fixvx.
+  - `expand_short_links`: follow short links like `bit.ly`.
+  - `hide_original_embeds`: hide the embed on the original message after replying.
+  - `delete_reaction`: the ❌ described below.
+- `/server ignore-channel` stops automatic cleaning in a channel, or a whole category. Threads follow their channel. `/clean` still works there. `/server watch-channel` undoes it.
+
+`FIX_X_LINKS`, `EXPAND_SHORT_LINKS` and `SUPPRESS_ORIGINAL_EMBEDS` set the defaults for servers that haven't changed that setting. `EXPAND_SHORT_LINKS=false` turns expansion off everywhere.
+
+## Deleting Linx's reply
+
+Linx adds a ❌ to each link it posts in a server. When the person it posted for clicks it, or anyone with Manage Messages in that channel, Linx deletes its post and brings back the original message's embed. Linx needs the **Add Reactions** permission for this. Servers that added Linx before this feature need to grant it, or re-invite Linx with the new link.
+
+## Using Linx where it isn't installed
+
+With Linx added to your account (Setup step 5), `/clean` and **Clean links** work in any server and in DMs. Linx isn't a member of those servers, so it can't clean links automatically, hide embeds, add the ❌ or send reply notifications there. Servers that block outside apps from posting publicly get a private reply instead, which only you see.
 
 ## Reply and reaction notifications
 
