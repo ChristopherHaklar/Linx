@@ -155,6 +155,11 @@ INSTAGRAM_REWRITE_HOST = re.compile(r"(?:www\.|m\.)?instagram\.com")  # not l.in
 # Post links may start with the poster's username (/someone/p/<code>/).
 INSTAGRAM_POST_RE = re.compile(r"(?:/[^/]+)?/(?:p|reel|reels|tv)/[^/]+", re.IGNORECASE)
 INSTAGRAM_CONTENT_RE = re.compile(INSTAGRAM_POST_RE.pattern + r"|/stories/[^/]+/[^/]+", re.IGNORECASE)
+# YouTube "sent a video" invites: the path token identifies the sender and s= is the video ID.
+# Rewritten without opening the invite, so cleaning a link can't register against the sender's token.
+YOUTUBE_HOST = _host(r"youtube\.com")
+YOUTUBE_INVITE_RE = re.compile(r"/sharing/invite/[^/]+/?")
+YOUTUBE_VIDEO_ID_RE = re.compile(r"[A-Za-z0-9_-]{11}")
 
 FIX_X_HOST = "fixvx.com"
 
@@ -272,6 +277,11 @@ def clean_url(url: str, fix_x: bool = True, instagram_host: str | None = None) -
         path, query = listing.group(0), ""  # the listing ID pins the item; every listing param is tracking
     elif INSTAGRAM_HOST.fullmatch(host) and INSTAGRAM_CONTENT_RE.match(path):
         query = ""  # the shortcode pins the post; every query param is a (rotating) share token
+    elif YOUTUBE_HOST.fullmatch(host) and YOUTUBE_INVITE_RE.fullmatch(path):
+        video_id = dict(parse_qsl(query)).get("s", "")
+        if YOUTUBE_VIDEO_ID_RE.fullmatch(video_id):
+            rest = _filter_query(query, lambda k: k != "s")  # anything else, like a t= timestamp, still applies
+            path, query = "/watch", f"v={video_id}&{rest}" if rest else f"v={video_id}"
 
     if fix_x and X_REWRITE_HOST.fullmatch(host):
         netloc = FIX_X_HOST

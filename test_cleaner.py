@@ -55,6 +55,25 @@ class CleanUrlTests(unittest.TestCase):
             "https://example.com/page?id=5#top",
         )
 
+    def test_youtube_share_invite_becomes_plain_video_link(self):
+        self.assertEqual(
+            clean_url("https://youtube.com/sharing/invite/RiEbLNIJiX8BOTZX?s=UVICSImWDL0"),
+            "https://youtube.com/watch?v=UVICSImWDL0",
+        )
+        self.assertEqual(
+            clean_url("https://www.youtube.com/sharing/invite/RiEbLNIJiX8BOTZX/?s=UVICSImWDL0&t=42&si=abc"),
+            "https://www.youtube.com/watch?v=UVICSImWDL0&t=42",
+        )
+
+    def test_youtube_share_invite_without_video_id_untouched(self):
+        for url in ("https://youtube.com/sharing/invite/RiEbLNIJiX8BOTZX",
+                    "https://youtube.com/sharing/invite/RiEbLNIJiX8BOTZX?s=short"):
+            self.assertEqual(clean_url(url), url)
+
+    def test_s_param_kept_on_other_youtube_pages(self):
+        url = "https://www.youtube.com/results?search_query=a&s=UVICSImWDL0"
+        self.assertEqual(clean_url(url), url)
+
     def test_youtube_keeps_video_and_time(self):
         self.assertEqual(
             clean_url("https://www.youtube.com/watch?v=dQw4w9WgXcQ&si=abc&t=42"),

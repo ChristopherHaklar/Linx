@@ -53,6 +53,7 @@ Linx does **not** remove `ref` from every link, because some sites use it for re
 - **X / Twitter embeds:** Linx changes `x.com` and `twitter.com` links to `fixvx.com`. This includes `www.`, `m.` and `mobile.` links. To disable this, set `FIX_X_LINKS=false`.
 - **Instagram embeds:** Discord shows no embed for Instagram links. So Linx changes Instagram post and reel links to `vxinstagram.com`, which gives Discord the video or image. Story and profile links stay on Instagram. To disable this, set `FIX_INSTAGRAM_LINKS=false`. To use a different embed-fixer site, set `INSTAGRAM_FIX_HOST`. These sites often stop working, so check this first when Instagram embeds fail.
 - **Product links:** Linx reduces these links to the product ID: Amazon `/dp/<ASIN>` (plus `smid` if present; old `/exec/obidos/ASIN/...` links too, which have the affiliate tag in the path), Best Buy `/site/<sku>.p`, Walmart `/ip/<id>`, Etsy `/listing/<id>/<name>`. On other Amazon pages, Linx removes the `/ref=...` path segment.
+- **YouTube share invites:** A `youtube.com/sharing/invite/<token>?s=<video>` link identifies the person who shared it. Linx changes it to a plain `/watch?v=<video>` link and does not open the invite. If the link has no video ID, Linx does not change it.
 - **Discord formatting:**
   - A spoilered link (`||link||`) gets a spoilered reply.
   - A link without an embed (`<link>`) gets a reply without an embed.
