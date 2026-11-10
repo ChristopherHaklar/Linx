@@ -11,6 +11,20 @@ class CleanUrlTests(unittest.TestCase):
             "https://fixvx.com/user/status/123",
         )
 
+    def test_x_post_links_drop_every_param(self):
+        self.assertEqual(
+            clean_url("https://x.com/Sir5000/status/2119717596027408691?a=meWalL9irushPhYSDYc&s=33"),
+            "https://fixvx.com/Sir5000/status/2119717596027408691",
+        )
+        self.assertEqual(clean_url("https://x.com/u/status/1/photo/1?some_future_token=x"),
+                         "https://fixvx.com/u/status/1/photo/1")
+        self.assertEqual(clean_url("https://twitter.com/i/web/status/1?a=x"), "https://fixvx.com/i/web/status/1")
+        self.assertEqual(clean_url("https://x.com/u/status/1?a=x", fix_x=False), "https://x.com/u/status/1")
+
+    def test_x_non_post_pages_keep_real_params(self):
+        self.assertEqual(clean_url("https://x.com/search?q=linx&src=typed_query&a=x", fix_x=False),
+                         "https://x.com/search?q=linx&src=typed_query")
+
     def test_twitter_and_mobile_hosts(self):
         self.assertEqual(clean_url("https://twitter.com/u/status/1"), "https://fixvx.com/u/status/1")
         self.assertEqual(clean_url("https://mobile.x.com/u/status/1"), "https://fixvx.com/u/status/1")

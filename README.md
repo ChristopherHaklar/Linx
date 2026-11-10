@@ -28,7 +28,7 @@ Linx does **not** remove `ref` from every link, because some sites use it for re
 
 | Site | Removed |
 |---|---|
-| X / Twitter | `s`, `t`, `cxt`, `rw_tt_thread` |
+| X / Twitter | `s`, `t`, `a`, `cxt`, `rw_tt_thread`. Post links (`/status/<id>`) lose every parameter. |
 | YouTube and youtu.be | `si`, `is`, `feature`, `pp`, `ab_channel`, `kw`, `source_ve_path`, `embeds_referring_euri`, `embeds_referring_origin` |
 | Spotify | `si`, `nd`, `context`, `_branch_match_id`, `_branch_referrer` |
 | Instagram | `igsh`, `img_index`, `srtk` |

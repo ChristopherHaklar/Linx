@@ -59,11 +59,14 @@ AMAZON_HOST = _host(rf"amazon\.{TLD}")
 GOOGLE_HOST = _host(rf"google\.{TLD}", subdomains=False)  # search only; not docs., maps., play.
 X_HOST = _host(r"(?:x|twitter)\.com")
 X_REWRITE_HOST = re.compile(r"(?:www\.|m\.|mobile\.)?(?:x|twitter)\.com")  # not api.x.com etc.
+# Post links (/<user>/status/<id>, /i/web/status/<id>, plus /photo/1 etc.): the ID pins the post, so
+# every query param is a share token (s, t, a, ...). Drop them all so new token names die too.
+X_POST_RE = re.compile(r"/[^/]+(?:/web)?/status(?:es)?/\d+(?:/.*)?", re.IGNORECASE)
 
 # Params that are only tracking on specific sites (they may be meaningful elsewhere).
 # A host collects the params of every rule it matches.
 SITE_RULES: list[tuple[re.Pattern, set[str]]] = [(host, {p.lower() for p in params}) for host, params in [
-    (X_HOST, {"s", "t", "cxt", "rw_tt_thread"}),
+    (X_HOST, {"s", "t", "a", "cxt", "rw_tt_thread"}),
     (_host(r"youtube\.com|youtu\.be"), {"si", "is", "feature", "pp", "ab_channel", "kw", "source_ve_path",
                                         "embeds_referring_euri", "embeds_referring_origin"}),
     (_host(r"spotify\.com"), {"si", "nd", "context", "_branch_match_id", "_branch_referrer"}),
@@ -277,6 +280,8 @@ def clean_url(url: str, fix_x: bool = True, instagram_host: str | None = None) -
         path, query = listing.group(0), ""  # the listing ID pins the item; every listing param is tracking
     elif INSTAGRAM_HOST.fullmatch(host) and INSTAGRAM_CONTENT_RE.match(path):
         query = ""  # the shortcode pins the post; every query param is a (rotating) share token
+    elif X_HOST.fullmatch(host) and X_POST_RE.fullmatch(path):
+        query = ""
     elif YOUTUBE_HOST.fullmatch(host) and YOUTUBE_INVITE_RE.fullmatch(path):
         video_id = dict(parse_qsl(query)).get("s", "")
         if YOUTUBE_VIDEO_ID_RE.fullmatch(video_id):
