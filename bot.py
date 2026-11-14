@@ -312,7 +312,7 @@ client.tree.add_command(server)
 @server.command(name="settings", description="Show or change how Linx behaves in this server")
 @app_commands.describe(
     auto_clean="Reply to links people post with a cleaned version (/clean always works)",
-    fix_x_links="Rewrite x.com and twitter.com links to fixvx.com so they embed",
+    fix_x_links="Rewrite x.com and twitter.com post links to fixvx.com so they embed",
     fix_instagram_links="Rewrite Instagram post and reel links to an embed-fixer site so they embed",
     expand_short_links="Follow short links like bit.ly and amzn.to so the real link can be cleaned",
     hide_original_embeds="Hide the embed on the original message after replying",

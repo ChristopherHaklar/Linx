@@ -244,7 +244,7 @@ def _filter_query(query: str, keep: Callable[[str], bool]) -> str:
 
 
 def clean_url(url: str, fix_x: bool = True, instagram_host: str | None = None) -> str:
-    """Return the URL with tracking params removed and (optionally) X links sent to fixvx.
+    """Return the URL with tracking params removed and (optionally) X post links sent to fixvx.
     With `instagram_host`, Instagram post and reel links go to that embed-fixer site instead,
     because Discord shows no embed for instagram.com. Story links stay on Instagram."""
     url = _unwrap(url)
@@ -288,8 +288,8 @@ def clean_url(url: str, fix_x: bool = True, instagram_host: str | None = None) -
             rest = _filter_query(query, lambda k: k != "s")  # anything else, like a t= timestamp, still applies
             path, query = "/watch", f"v={video_id}&{rest}" if rest else f"v={video_id}"
 
-    if fix_x and X_REWRITE_HOST.fullmatch(host):
-        netloc = FIX_X_HOST
+    if fix_x and X_REWRITE_HOST.fullmatch(host) and X_POST_RE.fullmatch(path):
+        netloc = FIX_X_HOST  # fixvx only embeds posts; broadcasts, profiles etc. must stay on X
     elif instagram_host and INSTAGRAM_REWRITE_HOST.fullmatch(host) and INSTAGRAM_POST_RE.match(path):
         netloc = instagram_host
 
